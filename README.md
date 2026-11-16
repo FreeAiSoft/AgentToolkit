@@ -8,15 +8,18 @@ Canonical source of truth for the code shared by the three agent hosts:
 
 Shared surface (UI-free, netstandard2.0):
 
-- `Agent.Mvvm` — MVVM base (`BaseModel`, `BaseViewModel`, `IView`, `RelayCommand`, `ViewMode`, `NotifyLevel`)
-- `Agent.Core` — agent core (tool framework, checkpoints, context, contracts, data models `ChatMessage`/`ChatPayloads`/…, prompt library, provider, markdown, memory bank)
+- `Agent.Mvvm` - MVVM base (`BaseModel`, `BaseViewModel`, `IView`, `RelayCommand`, `ViewMode`, `NotifyLevel`)
+- `Agent.Core` - agent core (tool framework, checkpoints, context, contracts, data models `ChatMessage`/`ChatPayloads`/..., prompt library, provider, markdown, memory bank)
+- `Agent.Models` - shared product models (`ChatModel`, `SettingsModel`)
+
+All three assemblies ship as a single NuGet package: **`AgentToolkit`**.
 
 Per-project (NOT shared): hosts, thin WPF view models, WPF controls, host services,
 project-specific tool catalogs (registered into the shared `AgentToolRegistry`).
 
 The RPAWriter2 tab models (`ChatModel`, `SettingsModel`, `LogAnalyzer`, `KnowledgeBaseModel`,
 `SpecTabModel`) and RPA services (robot generation, Pix/Mwf/UiPath converters, production-log
-analysis) live in `Agent.Rpa` inside the RPAWriter2 solution — they are coupled to RPA specifics
+analysis) live in `Agent.Rpa` inside the RPAWriter2 solution - they are coupled to RPA specifics
 and are not shared with VibeCoder / AI-RPA.
 
 ## Publishing
@@ -25,7 +28,11 @@ and are not shared with VibeCoder / AI-RPA.
 .\pack.ps1
 ```
 
-writes `.nupkg` files into `feed\`. Consumers add this folder as a NuGet package source:
+builds the three assemblies and packs them into a single `AgentToolkit` package in `feed\`.
+The GitHub Actions workflow `.github\workflows\build.yml` builds the same package and pushes
+it to nuget.org (requires the `NUGET_API_KEY` secret).
+
+Local consumers add the `feed\` folder as a NuGet package source and reference `AgentToolkit`:
 
 ```xml
 <add key="AgentShared" value="C:\Users\Maxxx\source\repos\AgentShared\feed" />

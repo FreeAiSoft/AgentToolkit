@@ -8,7 +8,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Agent.Core</RootNamespace>
     <AssemblyName>Agent.Core</AssemblyName>
-    <PackageId>AgentToolkit.Core</PackageId>
+    <IsPackable>false</IsPackable>
     <Description>UI-free agent core: tool framework, checkpoints, context, contracts, prompt library, provider, markdown, memory bank.</Description>
   </PropertyGroup>
 

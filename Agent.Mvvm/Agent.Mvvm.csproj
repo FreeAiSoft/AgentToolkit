@@ -10,7 +10,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Agent.Mvvm</RootNamespace>
     <AssemblyName>Agent.Mvvm</AssemblyName>
-    <PackageId>AgentToolkit.Mvvm</PackageId>
+    <IsPackable>false</IsPackable>
     <Description>UI-free MVVM primitives (BaseModel, BaseViewModel, IView, RelayCommand).</Description>
   </PropertyGroup>
 

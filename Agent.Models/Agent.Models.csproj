@@ -9,7 +9,7 @@
     <Nullable>annotations</Nullable>
     <RootNamespace>Agent.Models</RootNamespace>
     <AssemblyName>Agent.Models</AssemblyName>
-    <PackageId>AgentToolkit.Models</PackageId>
+    <IsPackable>false</IsPackable>
     <Description>UI-free shared models (chat, settings).</Description>
   </PropertyGroup>
 

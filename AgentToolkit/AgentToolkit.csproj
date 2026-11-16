@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Single combined AgentToolkit package. Bundles the three shared assemblies
+    (Agent.Mvvm, Agent.Core, Agent.Models) into one .nupkg so consumers install
+    a single package instead of three. The source projects are intentionally NOT
+    ProjectReferences here so they do not become package dependencies; they are
+    built separately before packing (see pack.ps1 / build.yml).
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>AgentToolkit</RootNamespace>
+    <AssemblyName>AgentToolkit</AssemblyName>
+    <PackageId>AgentToolkit</PackageId>
+    <Description>AgentToolkit: MVVM primitives, agent core and shared product models in one package.</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <!-- External dependencies of the bundled assemblies, declared explicitly so the
+       combined package carries them forward. -->
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="1.4.2" />
+    <PackageReference Include="DiffPlex" Version="1.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
+    <PackageReference Include="NPOI" Version="2.7.6" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.0" />
+  </ItemGroup>
+
+  <!-- Bundle the three built DLLs into lib/netstandard2.0. -->
+  <ItemGroup>
+    <None Include="..\Agent.Core\bin\$(Configuration)\netstandard2.0\Agent.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" />
+    <None Include="..\Agent.Mvvm\bin\$(Configuration)\netstandard2.0\Agent.Mvvm.dll" Pack="true" PackagePath="lib/netstandard2.0/" />
+    <None Include="..\Agent.Models\bin\$(Configuration)\netstandard2.0\Agent.Models.dll" Pack="true" PackagePath="lib/netstandard2.0/" />
+  </ItemGroup>
+
+</Project>

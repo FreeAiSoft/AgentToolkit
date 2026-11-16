@@ -5,8 +5,6 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Agent.Core" Version="1.7.1" />
-    <PackageReference Include="Agent.Mvvm" Version="1.7.1" />
-    <PackageReference Include="Agent.Models" Version="1.7.1" />
+    <PackageReference Include="AgentToolkit" Version="1.7.1" />
   </ItemGroup>
 </Project>
