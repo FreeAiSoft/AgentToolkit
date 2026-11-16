@@ -23,15 +23,15 @@ jobs:
 
       - name: Build bundled projects
         run: |
+          # nuget.config references a gitignored local feed (.\feed); create it so
+          # restore does not fail with NU1301 on the Linux runner.
+          mkdir -p feed
           dotnet build Agent.Mvvm/Agent.Mvvm.csproj -c Release --nologo
           dotnet build Agent.Core/Agent.Core.csproj -c Release --nologo
           dotnet build Agent.Models/Agent.Models.csproj -c Release --nologo
 
       - name: Pack
         run: |
-          # nuget.config references a gitignored local feed (.\feed); create it so
-          # restore does not fail with NU1301 on the Linux runner.
-          mkdir -p feed
           dotnet pack AgentToolkit/AgentToolkit.csproj -c Release -o artifacts --nologo
 
       - name: Push AgentToolkit
