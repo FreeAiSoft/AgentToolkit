@@ -23,6 +23,9 @@ jobs:
 
       - name: Pack
         run: |
+          # nuget.config references a gitignored local feed (.\feed); create it so
+          # restore does not fail with NU1301 on the Linux runner.
+          mkdir -p feed
           dotnet pack Agent.Mvvm/Agent.Mvvm.csproj     -c Release -o artifacts --nologo
           dotnet pack Agent.Models/Agent.Models.csproj -c Release -o artifacts --nologo
           dotnet pack Agent.Core/Agent.Core.csproj     -c Release -o artifacts --nologo
