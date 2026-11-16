@@ -7,5 +7,7 @@
     <Nullable>disable</Nullable>
     <Deterministic>true</Deterministic>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>agent;mvvm;core;models</PackageTags>
   </PropertyGroup>
 </Project>

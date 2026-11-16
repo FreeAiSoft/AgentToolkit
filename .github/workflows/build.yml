@@ -1,0 +1,38 @@
+name: Build and Publish NuGet Packages
+
+on:
+  workflow_dispatch:      # ручной запуск из GitHub: Actions -> Run workflow
+  push:
+    tags:
+      - 'v*'             # авто-публикация при создании тега, например v1.7.1
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Pack
+        run: |
+          dotnet pack Agent.Mvvm/Agent.Mvvm.csproj     -c Release -o artifacts --nologo
+          dotnet pack Agent.Models/Agent.Models.csproj -c Release -o artifacts --nologo
+          dotnet pack Agent.Core/Agent.Core.csproj     -c Release -o artifacts --nologo
+
+      # Порядок push важен: Mvvm -> Models -> Core (Models зависит от Mvvm)
+      - name: Push AgentToolkit.Mvvm
+        run: dotnet nuget push "artifacts/AgentToolkit.Mvvm.*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Push AgentToolkit.Models
+        run: dotnet nuget push "artifacts/AgentToolkit.Models.*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Push AgentToolkit.Core
+        run: dotnet nuget push "artifacts/AgentToolkit.Core.*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
