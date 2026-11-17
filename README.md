@@ -10,11 +10,13 @@ Shared surface (UI-free, netstandard2.0):
 
 - `Agent.Mvvm` - MVVM base (`BaseModel`, `BaseViewModel`, `IView`, `RelayCommand`, `ViewMode`, `NotifyLevel`)
 - `Agent.Core` - agent core (tool framework, checkpoints, context, contracts, data models `ChatMessage`/`ChatPayloads`/..., prompt library, provider, markdown, memory bank)
-- `Agent.Models` - shared product models (`ChatModel`, `SettingsModel`)
+- `Agent.Models` - shared product models (`ChatModel`, `SettingsModel`) and the `ContextUsageBinder` host helper
+- `Agent.Toolkit.Wpf` - shared WPF controls (`ContextIndicator`), net472
 
-All three assemblies ship as a single NuGet package: **`AgentToolkit`**.
+The three UI-free assemblies ship as a single NuGet package: **`AgentToolkit`**.
+The WPF assembly ships as a separate package: **`AgentToolkit.Wpf`**.
 
-Per-project (NOT shared): hosts, thin WPF view models, WPF controls, host services,
+Per-project (NOT shared): hosts, thin WPF view models, host services,
 project-specific tool catalogs (registered into the shared `AgentToolRegistry`).
 
 The RPAWriter2 tab models (`ChatModel`, `SettingsModel`, `LogAnalyzer`, `KnowledgeBaseModel`,

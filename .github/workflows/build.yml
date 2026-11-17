@@ -4,14 +4,14 @@ on:
   workflow_dispatch:      # manual run from GitHub: Actions -> Run workflow
   push:
     tags:
-      - 'v*'             # publish on tag, e.g. v1.7.2
+      - 'v*'             # publish on tag, e.g. v1.8.1
 
 permissions:
   contents: read
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,17 +22,24 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build bundled projects
+        shell: pwsh
         run: |
           # nuget.config references a gitignored local feed (.\feed); create it so
-          # restore does not fail with NU1301 on the Linux runner.
-          mkdir -p feed
+          # restore does not fail with NU1301.
+          New-Item -ItemType Directory -Force -Path feed | Out-Null
           dotnet build Agent.Mvvm/Agent.Mvvm.csproj -c Release --nologo
           dotnet build Agent.Core/Agent.Core.csproj -c Release --nologo
           dotnet build Agent.Models/Agent.Models.csproj -c Release --nologo
+          dotnet build Agent.Toolkit.Wpf/Agent.Toolkit.Wpf.csproj -c Release --nologo
 
       - name: Pack
+        shell: pwsh
         run: |
           dotnet pack AgentToolkit/AgentToolkit.csproj -c Release -o artifacts --nologo
+          dotnet pack AgentToolkit.Wpf/AgentToolkit.Wpf.csproj -c Release -o artifacts --nologo
 
       - name: Push AgentToolkit
         run: dotnet nuget push "artifacts/AgentToolkit.*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Push AgentToolkit.Wpf
+        run: dotnet nuget push "artifacts/AgentToolkit.Wpf.*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

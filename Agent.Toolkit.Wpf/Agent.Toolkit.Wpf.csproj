@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Shared WPF controls and host helpers for the agent hosts. This is the only AgentShared
+    assembly that may reference WPF; it stays on net472 so the VSIX hosts (RPAWriter2, VibeCoder)
+    and the net48 studio (AI-RPA) can all consume it.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Agent.Toolkit.Wpf</RootNamespace>
+    <AssemblyName>Agent.Toolkit.Wpf</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <Description>Shared WPF controls for the agent hosts (context-window indicator, chat message list and pending-message queue).</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <!-- Shared chat/markdown/mermaid renderers. Markdig also flows transitively from Agent.Core,
+         but is declared explicitly so the chat controls stay self-contained. -->
+    <PackageReference Include="Markdig" Version="1.4.2" />
+    <PackageReference Include="Material.Icons" Version="3.0.2" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Agent.Core\Agent.Core.csproj" />
+    <ProjectReference Include="..\Agent.Models\Agent.Models.csproj" />
+    <ProjectReference Include="..\Agent.Mvvm\Agent.Mvvm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.Xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Mermaid.js bundled as an embedded resource and read at runtime by MermaidDiagramControl. -->
+    <EmbeddedResource Include="Assets\mermaid.min.js">
+      <LogicalName>Agent.Toolkit.Wpf.Assets.mermaid.min.js</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

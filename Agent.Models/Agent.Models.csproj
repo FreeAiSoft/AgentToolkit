@@ -14,8 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Agent.Mvvm\Agent.Mvvm.csproj" />
     <ProjectReference Include="..\Agent.Core\Agent.Core.csproj" />
+    <ProjectReference Include="..\Agent.Mvvm\Agent.Mvvm.csproj" />
   </ItemGroup>
 
 </Project>

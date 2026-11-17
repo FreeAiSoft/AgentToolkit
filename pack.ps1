@@ -10,6 +10,7 @@ $projects = @(
     'Agent.Mvvm\Agent.Mvvm.csproj'
     'Agent.Core\Agent.Core.csproj'
     'Agent.Models\Agent.Models.csproj'
+    'Agent.Toolkit.Wpf\Agent.Toolkit.Wpf.csproj'
 )
 
 foreach ($p in $projects) {
@@ -24,4 +25,9 @@ $toolkit = Join-Path $root 'AgentToolkit\AgentToolkit.csproj'
 dotnet pack $toolkit -c Release -o $feed --nologo
 if ($LASTEXITCODE -ne 0) { throw "dotnet pack failed for AgentToolkit" }
 
-Write-Host "Package published to $feed"
+Write-Host "Packing AgentToolkit.Wpf ..."
+$toolkitWpf = Join-Path $root 'AgentToolkit.Wpf\AgentToolkit.Wpf.csproj'
+dotnet pack $toolkitWpf -c Release -o $feed --nologo
+if ($LASTEXITCODE -ne 0) { throw "dotnet pack failed for AgentToolkit.Wpf" }
+
+Write-Host "Packages published to $feed"
