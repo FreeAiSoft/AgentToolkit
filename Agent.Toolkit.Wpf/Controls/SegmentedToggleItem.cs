@@ -1,16 +1,28 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Agent.Toolkit.Wpf.Controls
 {
     /// <summary>One segment of a <see cref="SegmentedToggle"/> control.</summary>
-    public sealed class SegmentedToggleItem : INotifyPropertyChanged
+    /// <remarks>
+    /// Derives from <see cref="DependencyObject"/> so that <see cref="Accent"/> can be a
+    /// dependency property. The accent is assigned in XAML with a
+    /// <c>{DynamicResource Theme.ModePlan}</c>-style markup extension (see
+    /// <c>ChatControl.xaml</c>), which can only target a dependency property on a dependency
+    /// object; a plain CLR property would throw <c>XamlParseException</c> at load time.
+    /// </remarks>
+    public sealed class SegmentedToggleItem : DependencyObject, INotifyPropertyChanged
     {
         private string _label = "";
         private object? _value;
-        private Brush _accent = Brushes.Transparent;
         private bool _showSeparator = true;
+
+        /// <summary>Identifies the <see cref="Accent"/> dependency property.</summary>
+        public static readonly DependencyProperty AccentProperty = DependencyProperty.Register(
+            nameof(Accent), typeof(Brush), typeof(SegmentedToggleItem),
+            new PropertyMetadata(Brushes.Transparent));
 
         /// <summary>Text displayed inside the segment.</summary>
         public string Label
@@ -29,8 +41,8 @@ namespace Agent.Toolkit.Wpf.Controls
         /// <summary>Background brush of the segment while it is selected.</summary>
         public Brush Accent
         {
-            get => _accent;
-            set { if (!Equals(_accent, value)) { _accent = value; OnPropertyChanged(); } }
+            get => (Brush)GetValue(AccentProperty);
+            set => SetValue(AccentProperty, value);
         }
 
         /// <summary>Whether the vertical separator after this segment is visible.</summary>
