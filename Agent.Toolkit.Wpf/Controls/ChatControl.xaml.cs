@@ -49,6 +49,14 @@ namespace Agent.Toolkit.Wpf.Controls
         /// <summary>Settings used by the permissions overlay and voice input.</summary>
         public SettingsData Settings { get; set; }
 
+        /// <summary>
+        /// Optional persistence seam for the settings the permissions overlay edits. When null, the
+        /// permissions overlay falls back to the shared static <see cref="Agent.Core.Services.SettingsStore"/>.
+        /// Hosts that store settings elsewhere (e.g. VibeCoder under its own %AppData% folder)
+        /// inject their own <see cref="Agent.Core.Contracts.ISettingsStore"/> here.
+        /// </summary>
+        public ISettingsStore SettingsPersistence { get; set; }
+
         /// <summary>The chat model bound as this control's DataContext.</summary>
         public ChatModel Model => DataContext as ChatModel;
 
@@ -135,6 +143,10 @@ namespace Agent.Toolkit.Wpf.Controls
         private void RefreshPinnedMessage()
         {
             PinnedHeaderPanel.DataContext = Model?.PinnedMessage;
+            PinnedHeaderPanel.Visibility =
+                Model?.PinnedMessage != null && Model.IsConversationView
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
             ChatMessages.RefreshFilter();
         }
 
@@ -530,7 +542,10 @@ namespace Agent.Toolkit.Wpf.Controls
             Settings.AllowWebFetch = AllowWebFetchCheckBox?.IsChecked ?? false;
             Settings.AllowMcp = AllowMcpCheckBox?.IsChecked ?? false;
             Settings.AskBeforeEachTool = AskBeforeEachToolCheckBox?.IsChecked ?? false;
-            SettingsStore.Save(Settings);
+            if (SettingsPersistence != null)
+                SettingsPersistence.Save(Settings);
+            else
+                SettingsStore.Save(Settings);
             Host?.RebuildAgentTools();
         }
 

@@ -73,6 +73,14 @@ namespace Agent.Models
         private bool _checkpointsEnabled = true;
         private bool _roslynSemanticsEnabled = true;
         private bool _filterBuildTestOutput = true;
+        private bool _proxyEnabled = false;
+        private string _proxyHost = "";
+        private int _proxyPort = 8080;
+        private string _proxyUsername = "";
+        private string _proxyPassword = "";
+        private string _baseTheme = "Dark";
+        private string _primaryHex = "#6750A4";
+        private string _secondaryHex = "#625B71";
 
         private readonly IWorkspaceLogSettingsStore _workspaceLogStore;
         private readonly IWorkspaceProvider _workspaceProvider;
@@ -202,6 +210,14 @@ namespace Agent.Models
                 CheckpointsEnabled = _checkpointsEnabled,
                 RoslynSemanticsEnabled = _roslynSemanticsEnabled,
                 FilterBuildTestOutput = _filterBuildTestOutput,
+                ProxyEnabled = _proxyEnabled,
+                ProxyHost = _proxyHost,
+                ProxyPort = _proxyPort,
+                ProxyUsername = _proxyUsername,
+                ProxyPassword = _proxyPassword,
+                BaseTheme = _baseTheme,
+                PrimaryHex = _primaryHex,
+                SecondaryHex = _secondaryHex,
                 AdditionalReadPaths = new List<string>(_additionalReadPaths),
                 DisabledAgentTools = BuildDisabledNativeTools(),
                 DenyServiceDirectories = _denyServiceDirectories,
@@ -338,6 +354,14 @@ namespace Agent.Models
             CheckpointsEnabled = data.CheckpointsEnabled;
             RoslynSemanticsEnabled = data.RoslynSemanticsEnabled;
             FilterBuildTestOutput = data.FilterBuildTestOutput;
+            ProxyEnabled = data.ProxyEnabled;
+            ProxyHost = data.ProxyHost;
+            ProxyPort = data.ProxyPort;
+            ProxyUsername = data.ProxyUsername;
+            ProxyPassword = data.ProxyPassword;
+            BaseTheme = data.BaseTheme;
+            PrimaryHex = data.PrimaryHex;
+            SecondaryHex = data.SecondaryHex;
             _additionalReadPaths.Clear();
             if (data.AdditionalReadPaths != null)
             {
@@ -744,6 +768,22 @@ namespace Agent.Models
 
         /// <summary>Summarize dotnet build/test output in run_commands instead of returning raw console text.</summary>
         public bool FilterBuildTestOutput { get => _filterBuildTestOutput; set => SetProperty(ref _filterBuildTestOutput, value); }
+
+        public bool ProxyEnabled { get => _proxyEnabled; set => SetProperty(ref _proxyEnabled, value); }
+
+        public string ProxyHost { get => _proxyHost; set => SetProperty(ref _proxyHost, value); }
+
+        public int ProxyPort { get => _proxyPort; set => SetProperty(ref _proxyPort, value); }
+
+        public string ProxyUsername { get => _proxyUsername; set => SetProperty(ref _proxyUsername, value); }
+
+        public string ProxyPassword { get => _proxyPassword; set => SetProperty(ref _proxyPassword, value); }
+
+        public string BaseTheme { get => _baseTheme; set => SetProperty(ref _baseTheme, value); }
+
+        public string PrimaryHex { get => _primaryHex; set => SetProperty(ref _primaryHex, value); }
+
+        public string SecondaryHex { get => _secondaryHex; set => SetProperty(ref _secondaryHex, value); }
 
         /// <summary>Combo index of <see cref="ToolCallingMode"/>: 0 = JsonChat, 1 = Native.</summary>
         public int ToolCallingModeIndex

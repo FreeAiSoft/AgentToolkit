@@ -61,6 +61,7 @@
                 <Grid x:Name="MessagesHostPanel" Grid.Row="2" Margin="0,0,0,5">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -73,7 +74,6 @@
                             Visibility="Collapsed">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0">
@@ -122,16 +122,16 @@
                                 <Button Grid.Column="3" Style="{StaticResource IconButtonStyle}" Width="26" Height="26"
                                         VerticalAlignment="Top"
                                         ToolTip="Close chat (no active chat)" Click="OnCloseChat">
-                                    <TextBlock Text="вњ•" FontSize="12" Foreground="{StaticResource Dark.Text}"/>
+                                    <TextBlock Text="✕" FontSize="12" Foreground="{StaticResource Dark.Text}"/>
                                 </Button>
                             </Grid>
-                            <toolkit:ContextIndicator x:Name="ChatContextIndicator" Grid.Row="1" Margin="0,6,0,0"
-                                                      Model="{Binding}"/>
                         </Grid>
                     </Border>
-                    <toolkit:ChatMessagesControl x:Name="ChatMessages" Grid.Row="1"/>
-                    <toolkit:MessageQueueControl x:Name="MessageQueue" Grid.Row="2" Margin="0,4,0,0"/>
-                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,4,0,4">
+                    <toolkit:ContextIndicator x:Name="ChatContextIndicator" Grid.Row="1" Margin="0,6,0,0"
+                                              Model="{Binding}"/>
+                    <toolkit:ChatMessagesControl x:Name="ChatMessages" Grid.Row="2"/>
+                    <toolkit:MessageQueueControl x:Name="MessageQueue" Grid.Row="3" Margin="0,4,0,0"/>
+                    <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,4,0,4">
                         <TextBlock x:Name="AgentStatusText" VerticalAlignment="Center"
                                    Margin="0,3,8,0" TextWrapping="Wrap"
                                    Text="{Binding StatusText}"
@@ -172,21 +172,21 @@
                                    Text="{Binding StatusErrorText}"
                                    Visibility="{Binding Phase, Converter={StaticResource PhaseErrorVisibility}}"/>
                     </StackPanel>
-                    <Button x:Name="CancelButton" Grid.Row="4" Content="Cancel" FontSize="14"
+                    <Button x:Name="CancelButton" Grid.Row="5" Content="Cancel" FontSize="14"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="1"
                             Padding="10,2"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                             Margin="0,0,0,0" Click="OnCancelSend"
                             Visibility="{Binding Phase, Converter={StaticResource PhaseStreamingVisibility}}"/>
-                    <Button x:Name="ResumeButton" Grid.Row="4" Content="Resume task" FontSize="14"
+                    <Button x:Name="ResumeButton" Grid.Row="5" Content="Resume task" FontSize="14"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="1"
                             Padding="10,2"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                             Margin="0,0,0,0" Click="OnResumeTask"
                             Visibility="{Binding CanResume, Converter={StaticResource BoolToVis}}"/>
-                    <ItemsControl Grid.Row="5" x:Name="AttachmentsList" Margin="0,0,0,4" Visibility="Collapsed">
+                    <ItemsControl Grid.Row="6" x:Name="AttachmentsList" Margin="0,0,0,4" Visibility="Collapsed">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel/>
@@ -199,7 +199,7 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding DisplayText}" VerticalAlignment="Center"
                                                    Foreground="{StaticResource Dark.Text}" FontSize="13"/>
-                                        <Button Content="вњ•" Width="16" Height="16" Margin="6,0,0,0"
+                                        <Button Content="✕" Width="16" Height="16" Margin="6,0,0,0"
                                                 Style="{StaticResource IconButtonStyle}" FontSize="10"
                                                 Tag="{Binding}" Click="OnRemoveAttachment" ToolTip="Remove attachment"/>
                                     </StackPanel>
@@ -348,7 +348,7 @@
                                            Foreground="{StaticResource Dark.Text}" VerticalAlignment="Center"/>
                                 <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}" Width="20" Height="20"
                                         ToolTip="Close" Click="OnPermissionsClose">
-                                    <TextBlock Text="вњ•" FontSize="11" Foreground="{StaticResource Dark.Text}"/>
+                                    <TextBlock Text="✕" FontSize="11" Foreground="{StaticResource Dark.Text}"/>
                                 </Button>
                             </Grid>
                             <CheckBox x:Name="AllowReadFilesCheckBox" Content="Read files"
@@ -399,7 +399,7 @@
                             <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Width="20" Height="20"
                                     Margin="8,0,0,0" VerticalAlignment="Center"
                                     ToolTip="Close" Click="OnDocsClose">
-                                <TextBlock Text="вњ•" FontSize="11" Foreground="{StaticResource Dark.Text}"/>
+                                <TextBlock Text="✕" FontSize="11" Foreground="{StaticResource Dark.Text}"/>
                             </Button>
                         </Grid>
                         <ScrollViewer Grid.Row="1" x:Name="DocsScroll"
@@ -455,7 +455,7 @@
                                         <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,6,0"
                                                 Style="{StaticResource IconButtonStyle}" Width="22" Height="22"
                                                 ToolTip="Delete chat" Click="OnDeleteHistoryCard">
-                                            <TextBlock Text="вњ•" FontSize="11" Foreground="{StaticResource Dark.Text}"/>
+                                            <TextBlock Text="✕" FontSize="11" Foreground="{StaticResource Dark.Text}"/>
                                         </Button>
                                         <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,28,6,0"
                                                 Style="{StaticResource IconButtonStyle}" Width="22" Height="22"

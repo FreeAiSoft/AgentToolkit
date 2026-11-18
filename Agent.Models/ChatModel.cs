@@ -36,7 +36,7 @@ namespace Agent.Models
         private readonly IWorkspaceProvider _workspaceProvider;
 
         /// <summary>
-        /// Backing field of <see cref="ActiveChatConversation"/> вЂ” the single source of truth for
+        /// Backing field of <see cref="ActiveChatConversation"/> — the single source of truth for
         /// "which chat is active". Activity is never stored, cached or mirrored anywhere else.
         /// </summary>
         private ChatConversation _activeChatConversation;
@@ -135,18 +135,18 @@ namespace Agent.Models
         public ObservableCollection<ChatConversation> History { get; }
 
         /// <summary>
-        /// The active conversation вЂ” the one and only definition of "which chat is active":
+        /// The active conversation — the one and only definition of "which chat is active":
         /// a chat is active while this property is not <c>null</c>.
         /// <para>
         /// Assigning this property is the only way activity changes (open, new chat, restore, close,
         /// delete). Every other member that looks like an activity flag is a derived projection and is
         /// never a second source: <see cref="ActiveConversationId"/>, <see cref="HasActiveConversation"/>
         /// and <see cref="ChatConversation.IsActive"/> (recomputed from here by
-        /// <see cref="UpdateActiveFlags"/>). Do not duplicate the state вЂ” read this property instead of
+        /// <see cref="UpdateActiveFlags"/>). Do not duplicate the state — read this property instead of
         /// caching, copying or persisting "is active" anywhere else.
         /// </para>
         /// <para>
-        /// "Closed" is expressed by <c>null</c> and by nothing else вЂ” not by <see cref="ViewMode"/>, not
+        /// "Closed" is expressed by <c>null</c> and by nothing else — not by <see cref="ViewMode"/>, not
         /// by <see cref="UiStateData.LastConversationId"/> and not by a host flag (a running agent turn is
         /// no activity flag either). A closed chat owns no transcript and is reopened lazily by
         /// <see cref="EnsureActiveConversation"/>.
@@ -167,7 +167,7 @@ namespace Agent.Models
         }
 
         /// <summary>
-        /// Id of <see cref="ActiveChatConversation"/> вЂ” a read-only projection, not a second source of
+        /// Id of <see cref="ActiveChatConversation"/> — a read-only projection, not a second source of
         /// activity. Never cache it and never branch on it instead of the property itself.
         /// </summary>
         public string ActiveConversationId => _activeChatConversation?.Id ?? "";
@@ -734,7 +734,7 @@ namespace Agent.Models
         /// <summary>
         /// Resets the in-memory conversation without persisting it (used after delete/clear, so the
         /// tab does not keep showing a conversation that no longer exists). The tab is left without an
-        /// active conversation вЂ” the same "closed" state <see cref="CloseActiveChat"/> produces.
+        /// active conversation — the same "closed" state <see cref="CloseActiveChat"/> produces.
         /// </summary>
         public void ResetConversation()
         {
@@ -746,7 +746,7 @@ namespace Agent.Models
         /// Returns the active conversation, creating one when the chat is closed. Every entry point that
         /// produces a message on the user's behalf (Send errors, "Send to RPA Writer", "Send exception to
         /// RPA Writer", notification banners) calls this first, so a message can never be written into a
-        /// transcript that belongs to no conversation вЂ” such a message would be neither displayed nor
+        /// transcript that belongs to no conversation — such a message would be neither displayed nor
         /// saved.
         /// <para>
         /// Idempotent: with a conversation already active it only returns it.
@@ -766,7 +766,7 @@ namespace Agent.Models
 
         /// <summary>
         /// Closes the chat (the close button of the conversation header): flushes the transcript, drops
-        /// it from memory and leaves the tab without an active conversation вЂ”
+        /// it from memory and leaves the tab without an active conversation —
         /// <see cref="ActiveChatConversation"/> becomes <c>null</c>, so the next <see cref="PersistUiState"/>
         /// writes an empty <see cref="UiStateData.LastConversationId"/> and the closed chat is not
         /// restored on the next start. The conversation stays in <see cref="History"/> and can be
@@ -1115,7 +1115,7 @@ namespace Agent.Models
             _uiStateStore.Save(new UiStateData
             {
                 ChatViewMode = ViewMode,
-                // Restore hint for the next session only вЂ” not an activity flag.
+                // Restore hint for the next session only — not an activity flag.
                 LastConversationId = ActiveConversationId,
                 AgentMode = Mode,
                 ActiveTab = activeTab

@@ -47,6 +47,32 @@ namespace Agent.Core.Services
         /// <summary>Price per 1M output tokens, in USD.</summary>
         public double OutputPricePerMillion { get; set; } = 1.10;
 
+        // ---- Proxy (host-provided HTTP proxy for provider requests) ----
+        /// <summary>Route provider requests through a configured HTTP proxy.</summary>
+        public bool ProxyEnabled { get; set; } = false;
+
+        /// <summary>Proxy host name or IP address (without scheme).</summary>
+        public string ProxyHost { get; set; } = "";
+
+        /// <summary>Proxy TCP port.</summary>
+        public int ProxyPort { get; set; } = 8080;
+
+        /// <summary>Optional proxy authentication user name.</summary>
+        public string ProxyUsername { get; set; } = "";
+
+        /// <summary>Optional proxy authentication password.</summary>
+        public string ProxyPassword { get; set; } = "";
+
+        // ---- Theme (host-provided accent theming) ----
+        /// <summary>Base theme name: "Dark" or "Light".</summary>
+        public string BaseTheme { get; set; } = "Dark";
+
+        /// <summary>Primary accent color as "#RRGGBB".</summary>
+        public string PrimaryHex { get; set; } = "#6750A4";
+
+        /// <summary>Secondary accent color as "#RRGGBB".</summary>
+        public string SecondaryHex { get; set; } = "#625B71";
+
         /// <summary>Automatically summarize the conversation when approaching the context limit.</summary>
         public bool AutoCompact { get; set; } = true;
 
@@ -234,6 +260,17 @@ namespace Agent.Core.Services
             if (string.IsNullOrWhiteSpace(settings.SpeechToTextLanguage))
                 settings.SpeechToTextLanguage = "ru";
 
+            if (settings.ProxyPort <= 0 || settings.ProxyPort > 65535)
+                settings.ProxyPort = 8080;
+            if (string.IsNullOrWhiteSpace(settings.BaseTheme) ||
+                (!string.Equals(settings.BaseTheme, "Dark", StringComparison.OrdinalIgnoreCase) &&
+                 !string.Equals(settings.BaseTheme, "Light", StringComparison.OrdinalIgnoreCase)))
+                settings.BaseTheme = "Dark";
+            if (!IsHexColor(settings.PrimaryHex))
+                settings.PrimaryHex = "#6750A4";
+            if (!IsHexColor(settings.SecondaryHex))
+                settings.SecondaryHex = "#625B71";
+
             if (settings.AdditionalReadPaths == null)
             {
                 settings.AdditionalReadPaths = new List<string>();
@@ -265,6 +302,24 @@ namespace Agent.Core.Services
                 }
                 settings.DisabledAgentTools = cleanedTools;
             }
+        }
+
+        private static bool IsHexColor(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+            var s = value.Trim();
+            if (!s.StartsWith("#", StringComparison.Ordinal))
+                return false;
+            if (s.Length != 7)
+                return false;
+            for (var i = 1; i < s.Length; i++)
+            {
+                var c = s[i];
+                if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+                    return false;
+            }
+            return true;
         }
     }
 

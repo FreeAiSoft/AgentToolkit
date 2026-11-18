@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="../RPAWriter2/Agent.Rpa/Agent.Rpa.csproj" />
   <Project Path="Agent.Core/Agent.Core.csproj" />
   <Project Path="Agent.Models/Agent.Models.csproj" />
   <Project Path="Agent.Mvvm/Agent.Mvvm.csproj" />

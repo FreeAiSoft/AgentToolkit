@@ -498,7 +498,7 @@
                                                                                MaxWidth="600">
                                                             <Run Text="{Binding Name, Mode=OneWay}"
                                                                         FontFamily="Consolas" />
-                                                            <Run Text=" вЂ” " />
+                                                            <Run Text=" — " />
                                                             <Run Text="{Binding Description, Mode=OneWay}" />
                                                                     </TextBlock>
                                                                 </CheckBox>
@@ -620,7 +620,7 @@
                                         <StackPanel DockPanel.Dock="Right"
                                                     Orientation="Vertical"
                                                     Margin="8,0,0,0">
-                                            <Button Content="Add folderвЂ¦"
+                                            <Button Content="Add folder…"
                                                     Command="{Binding Cmd}"
                                                     CommandParameter="AddReadPathCommand"
                                                     Margin="0,0,0,4" />
