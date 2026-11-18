@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Agent.Core.Context;
 using Agent.Core.Contracts;
 using Agent.Core.Models;
 using Agent.Core.Services;
@@ -89,6 +90,7 @@ namespace Agent.Toolkit.Wpf.Controls
 
         /// <summary>Slot for the host's checkpoint-restore error toast.</summary>
         public ContentControl CheckpointRestoreErrorToastHost => CheckpointRestoreErrorToastSlot;
+        public ContentControl PromptCacheLossToastHost => PromptCacheLossToastSlot;
 
         /// <summary>Slot for the host's commit editor control.</summary>
         public ContentControl CommitEditorHost => CommitEditorSlot;
@@ -106,6 +108,9 @@ namespace Agent.Toolkit.Wpf.Controls
         /// <summary>Raised when voice input fails; the host shows its error toast in the slot.</summary>
         public event EventHandler<string> VoiceError;
 
+        /// <summary>Re-raises <see cref="ChatModel.PromptCacheLost"/> so the host can show a toast.</summary>
+        public event EventHandler<PromptCacheLossInfo> PromptCacheLost;
+
         /// <summary>Injects the host-provided voice services (recorder + speech-to-text).</summary>
         public void AttachServices(IMicrophoneRecorder mic, ISpeechToTextService stt)
         {
@@ -118,13 +123,17 @@ namespace Agent.Toolkit.Wpf.Controls
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (e.OldValue is ChatModel oldModel)
+            {
                 oldModel.PropertyChanged -= OnModelPropertyChanged;
+                oldModel.PromptCacheLost -= OnPromptCacheLost;
+            }
 
             var model = e.NewValue as ChatModel;
             if (model == null)
                 return;
 
             model.PropertyChanged += OnModelPropertyChanged;
+            model.PromptCacheLost += OnPromptCacheLost;
 
             // Share the model-owned collections with the list controls.
             ChatMessages.Messages = model.Messages;
@@ -142,6 +151,11 @@ namespace Agent.Toolkit.Wpf.Controls
                 RefreshPinnedMessage();
         }
 
+        private void OnPromptCacheLost(object sender, PromptCacheLossInfo info)
+        {
+            PromptCacheLost?.Invoke(this, info);
+        }
+
         private void RefreshPinnedMessage()
         {
             PinnedHeaderPanel.DataContext = Model?.PinnedMessage;
@@ -149,6 +163,8 @@ namespace Agent.Toolkit.Wpf.Controls
                 Model?.PinnedMessage != null && Model.IsConversationView
                     ? Visibility.Visible
                     : Visibility.Collapsed;
+            _pinnedExpanded = false;
+            UpdatePinnedExpandState();
             ChatMessages.RefreshFilter();
         }
 
@@ -659,6 +675,8 @@ namespace Agent.Toolkit.Wpf.Controls
             PinnedTextScroll.Visibility = _pinnedExpanded ? Visibility.Visible : Visibility.Collapsed;
             PinnedTextScroll.MaxHeight = PinnedExpandedHeight;
             PinnedTextScroll.VerticalScrollBarVisibility = _pinnedExpanded ? ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled;
+            PinnedExpandGlyph.Points = PointCollection.Parse(_pinnedExpanded ? "6,9 12,15 18,9" : "9,18 15,12 9,6");
+            ChatContextIndicator.ShowDetails = _pinnedExpanded;
         }
 
         private void OnCopyPinnedMessage(object sender, RoutedEventArgs e)

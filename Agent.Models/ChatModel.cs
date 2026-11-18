@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Agent.Core.Context;
 using Agent.Core.Contracts;
 using Agent.Core.Models;
 using Agent.Core.Services;
@@ -34,6 +35,7 @@ namespace Agent.Models
         private readonly IUiStateStore _uiStateStore;
         private readonly IChatPromptSink _chatSink;
         private readonly IWorkspaceProvider _workspaceProvider;
+        private readonly IAgentLogger _logger;
 
         /// <summary>
         /// Backing field of <see cref="ActiveChatConversation"/> — the single source of truth for
@@ -84,13 +86,14 @@ namespace Agent.Models
         /// (e.g. a log-analysis panel); it may be assigned later through <see cref="ChildModel"/>
         /// and may stay <c>null</c>.
         /// </summary>
-        public ChatModel(IChatHistoryStore historyStore, IUiStateStore uiStateStore = null, IChatChildModel childModel = null, IChatPromptSink chatSink = null, IWorkspaceProvider workspaceProvider = null, Func<DateTime> utcNow = null)
+        public ChatModel(IChatHistoryStore historyStore, IUiStateStore uiStateStore = null, IChatChildModel childModel = null, IChatPromptSink chatSink = null, IWorkspaceProvider workspaceProvider = null, Func<DateTime> utcNow = null, IAgentLogger logger = null)
         {
             _historyStore = historyStore ?? throw new ArgumentNullException(nameof(historyStore));
             _uiStateStore = uiStateStore;
             _chatSink = chatSink;
             _workspaceProvider = workspaceProvider;
             _utcNow = utcNow ?? (() => DateTime.UtcNow);
+            _logger = logger ?? NoOpLogger.Instance;
             ChildModel = childModel;
 
             Messages = new ObservableCollection<ChatMessage>();
@@ -1067,6 +1070,18 @@ namespace Agent.Models
         }
 
         /// <summary>
+        /// Raised when the prompt-cache input of a request dropped below the previous request
+        /// beyond <see cref="CacheLossDropRatioPercent"/>. The payload carries the loss detail.
+        /// </summary>
+        public event EventHandler<PromptCacheLossInfo> PromptCacheLost;
+
+        /// <summary>
+        /// Tolerable cache-hit drop between requests, in percent (0..100). 0 detects any drop,
+        /// 100 disables detection. The host mirrors this from the settings model.
+        /// </summary>
+        public double CacheLossDropRatioPercent { get; set; } = 0;
+
+        /// <summary>
         /// Adds a single request's token usage to the active conversation. No-op while the chat is
         /// closed. This is the single accumulation point, so a future persistence step only has to
         /// mark the conversation dirty here.
@@ -1080,7 +1095,22 @@ namespace Agent.Models
             if (conversation == null)
                 return;
 
+            var loss = PromptCacheLossDetector.Detect(
+                usage,
+                conversation.PreviousCacheHitTokens,
+                conversation.PreviousPromptTokens,
+                CacheLossDropRatioPercent);
+
             conversation.AccumulateUsage(usage);
+
+            conversation.PreviousCacheHitTokens = Math.Max(0, usage.CacheHitTokens);
+            conversation.PreviousPromptTokens = Math.Max(0, usage.PromptTokens);
+
+            if (loss != null)
+            {
+                _logger.Warn(loss.Message);
+                PromptCacheLost?.Invoke(this, loss);
+            }
         }
 
         #endregion Context counters
@@ -1178,5 +1208,15 @@ namespace Agent.Models
         }
 
         #endregion Commands
+
+        private sealed class NoOpLogger : IAgentLogger
+        {
+            public static readonly NoOpLogger Instance = new NoOpLogger();
+
+            public void Info(string message) { }
+            public void Warn(string message) { }
+            public void Error(string message) { }
+            public void Error(Exception exception, string message = null) { }
+        }
     }
 }

@@ -185,6 +185,12 @@ namespace Agent.Core.Models
             }
         }
 
+        /// <summary>Cache-hit tokens of the previous request (runtime-only, not persisted).</summary>
+        public int PreviousCacheHitTokens { get; set; }
+
+        /// <summary>Prompt tokens of the previous request (runtime-only, not persisted).</summary>
+        public int PreviousPromptTokens { get; set; }
+
         /// <summary>Adds a single request's usage to <see cref="Usage"/> and notifies bindings.</summary>
         public void AccumulateUsage(TokenUsage delta)
         {

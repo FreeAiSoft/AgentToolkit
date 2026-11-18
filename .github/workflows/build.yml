@@ -28,7 +28,9 @@ jobs:
           # restore does not fail with NU1301.
           New-Item -ItemType Directory -Force -Path feed | Out-Null
           dotnet build Agent.Mvvm/Agent.Mvvm.csproj -c Release --nologo
-          dotnet build Agent.Core/Agent.Core.csproj -c Release --nologo
+          # AgentSkipReleasePack=true stops Agent.Core's Release post-build event from
+          # running the local-feed auto-pack inside CI.
+          dotnet build Agent.Core/Agent.Core.csproj -c Release -p:AgentSkipReleasePack=true --nologo
           dotnet build Agent.Models/Agent.Models.csproj -c Release --nologo
           dotnet build Agent.Toolkit.Wpf/Agent.Toolkit.Wpf.csproj -c Release --nologo
 

@@ -9,6 +9,7 @@
   <Project Path="Agent.Toolkit.Wpf/Agent.Toolkit.Wpf.csproj" />
   <Project Path="AgentToolkit.Wpf/AgentToolkit.Wpf.csproj" />
   <Project Path="AgentToolkit/AgentToolkit.csproj" />
+  <Project Path="PackTool/PackTool.csproj" />
   <Project Path="smoke/smoke.csproj" />
 </Solution>
 

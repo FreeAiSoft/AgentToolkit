@@ -39,6 +39,7 @@ namespace Agent.Models
         private bool _noRetryOn4xx = true;
         private double _inputPricePerMillion = 0.27;
         private double _cacheHitPricePerMillion = 0.07;
+        private double _cacheLossDropRatioPercent = 0;
         private double _outputPricePerMillion = 1.10;
         private bool _autoCompact = true;
         private double _compactThreshold = 0.85;
@@ -177,6 +178,7 @@ namespace Agent.Models
                 NoRetryOn4xx = _noRetryOn4xx,
                 InputPricePerMillion = _inputPricePerMillion,
                 CacheHitPricePerMillion = _cacheHitPricePerMillion,
+                CacheLossDropRatioPercent = _cacheLossDropRatioPercent,
                 OutputPricePerMillion = _outputPricePerMillion,
                 AutoCompact = _autoCompact,
                 CompactThreshold = _compactThreshold,
@@ -322,6 +324,7 @@ namespace Agent.Models
             NoRetryOn4xx = data.NoRetryOn4xx;
             InputPricePerMillion = data.InputPricePerMillion;
             CacheHitPricePerMillion = data.CacheHitPricePerMillion;
+            CacheLossDropRatioPercent = data.CacheLossDropRatioPercent;
             OutputPricePerMillion = data.OutputPricePerMillion;
             AutoCompact = data.AutoCompact;
             CompactThreshold = data.CompactThreshold;
@@ -732,6 +735,9 @@ namespace Agent.Models
         public double InputPricePerMillion { get => _inputPricePerMillion; set => SetProperty(ref _inputPricePerMillion, value); }
 
         public double CacheHitPricePerMillion { get => _cacheHitPricePerMillion; set => SetProperty(ref _cacheHitPricePerMillion, value); }
+
+        /// <summary>Tolerable cache-hit drop between requests, in percent (0..100); 0 = any loss, 100 = none.</summary>
+        public double CacheLossDropRatioPercent { get => _cacheLossDropRatioPercent; set => SetProperty(ref _cacheLossDropRatioPercent, value); }
 
         public double OutputPricePerMillion { get => _outputPricePerMillion; set => SetProperty(ref _outputPricePerMillion, value); }
 

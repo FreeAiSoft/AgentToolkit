@@ -48,6 +48,9 @@ namespace Agent.Core.Services
         /// <summary>Price per 1M cache-hit input tokens, in USD.</summary>
         public double CacheHitPricePerMillion { get; set; } = 0.07;
 
+        /// <summary>Tolerable cache-hit drop between requests, in percent (0..100); 0 = any loss, 100 = none.</summary>
+        public double CacheLossDropRatioPercent { get; set; } = 0;
+
         /// <summary>Price per 1M output tokens, in USD.</summary>
         public double OutputPricePerMillion { get; set; } = 1.10;
 

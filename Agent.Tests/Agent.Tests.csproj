@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Agent.Core\Agent.Core.csproj" />
     <ProjectReference Include="..\Agent.Models\Agent.Models.csproj" />
     <ProjectReference Include="..\Agent.Mvvm\Agent.Mvvm.csproj" />
+    <ProjectReference Include="..\PackTool\PackTool.csproj" />
   </ItemGroup>
 
 </Project>

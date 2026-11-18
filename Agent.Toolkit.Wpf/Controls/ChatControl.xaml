@@ -53,6 +53,7 @@
                     <ContentControl x:Name="OptionsWarningToastSlot" Margin="0,0,0,6" Visibility="Collapsed"/>
                     <ContentControl x:Name="CommitResultBarSlot" Margin="0,0,0,6" Visibility="Collapsed"/>
                     <ContentControl x:Name="CheckpointRestoreErrorToastSlot" Margin="0,0,0,6" Visibility="Collapsed"/>
+                    <ContentControl x:Name="PromptCacheLossToastSlot" Margin="0,0,0,6" Visibility="Collapsed"/>
                     <ContentControl x:Name="CreateRobotPanelSlot" Margin="0,0,0,6" Visibility="Collapsed"/>
                 </StackPanel>
 
@@ -60,7 +61,6 @@
 
                 <Grid x:Name="MessagesHostPanel" Grid.Row="2" Margin="0,0,0,5">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
@@ -74,6 +74,7 @@
                             Visibility="Collapsed">
                         <Grid>
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0">
@@ -125,13 +126,12 @@
                                     <TextBlock Text="✕" FontSize="12" Foreground="{DynamicResource Theme.Text}"/>
                                 </Button>
                             </Grid>
+                            <toolkit:ContextIndicator x:Name="ChatContextIndicator" Grid.Row="1" Margin="0,6,0,0" Model="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type toolkit:ChatControl}}}"/>
                         </Grid>
                     </Border>
-                    <toolkit:ContextIndicator x:Name="ChatContextIndicator" Grid.Row="1" Margin="0,6,0,0"
-                                              Model="{Binding}"/>
-                    <toolkit:ChatMessagesControl x:Name="ChatMessages" Grid.Row="2"/>
-                    <toolkit:MessageQueueControl x:Name="MessageQueue" Grid.Row="3" Margin="0,4,0,0"/>
-                    <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,4,0,4">
+                    <toolkit:ChatMessagesControl x:Name="ChatMessages" Grid.Row="1"/>
+                    <toolkit:MessageQueueControl x:Name="MessageQueue" Grid.Row="2" Margin="0,4,0,0"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,4,0,4">
                         <TextBlock x:Name="AgentStatusText" VerticalAlignment="Center"
                                    Margin="0,3,8,0" TextWrapping="Wrap"
                                    Text="{Binding StatusText}"
@@ -172,21 +172,21 @@
                                    Text="{Binding StatusErrorText}"
                                    Visibility="{Binding Phase, Converter={StaticResource PhaseErrorVisibility}}"/>
                     </StackPanel>
-                    <Button x:Name="CancelButton" Grid.Row="5" Content="Cancel" FontSize="14"
+                    <Button x:Name="CancelButton" Grid.Row="4" Content="Cancel" FontSize="14"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Background="Transparent" Foreground="{DynamicResource Theme.Text}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                             Padding="10,2"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                             Margin="0,0,0,0" Click="OnCancelSend"
                             Visibility="{Binding Phase, Converter={StaticResource PhaseStreamingVisibility}}"/>
-                    <Button x:Name="ResumeButton" Grid.Row="5" Content="Resume task" FontSize="14"
+                    <Button x:Name="ResumeButton" Grid.Row="4" Content="Resume task" FontSize="14"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Background="Transparent" Foreground="{DynamicResource Theme.Text}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                             Padding="10,2"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                             Margin="0,0,0,0" Click="OnResumeTask"
                             Visibility="{Binding CanResume, Converter={StaticResource BoolToVis}}"/>
-                    <ItemsControl Grid.Row="6" x:Name="AttachmentsList" Margin="0,0,0,4" Visibility="Collapsed">
+                    <ItemsControl Grid.Row="5" x:Name="AttachmentsList" Margin="0,0,0,4" Visibility="Collapsed">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel/>

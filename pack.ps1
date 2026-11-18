@@ -16,7 +16,9 @@ $projects = @(
 foreach ($p in $projects) {
     $csproj = Join-Path $root $p
     Write-Host "Building $csproj ..."
-    dotnet build $csproj -c Release --nologo
+    # AgentSkipReleasePack=true keeps Agent.Core's Release post-build event from
+    # re-triggering the auto-pack while this manual script is running.
+    dotnet build $csproj -c Release -p:AgentSkipReleasePack=true --nologo
     if ($LASTEXITCODE -ne 0) { throw "dotnet build failed for $p" }
 }
 
