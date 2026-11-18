@@ -9,5 +9,5 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <TextBlock Text="{Binding Text, Mode=OneWay}" TextWrapping="Wrap"
-               Foreground="{StaticResource Dark.Text}" Margin="8,4,0,7" VerticalAlignment="Center"/>
+               Foreground="{DynamicResource Theme.Text}" Margin="8,4,0,7" VerticalAlignment="Center"/>
 </UserControl>

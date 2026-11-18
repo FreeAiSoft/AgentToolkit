@@ -4,7 +4,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Shapes;
+using Agent.Models;
 using Agent.Toolkit.Wpf.Converters;
+using Agent.Toolkit.Wpf.Theming;
 using Material.Icons;
 
 namespace Agent.Toolkit.Wpf.Controls
@@ -23,6 +25,31 @@ namespace Agent.Toolkit.Wpf.Controls
         public SettingsControl()
         {
             InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            AgentThemeManager.Apply(GetBaseTheme());
+        }
+
+        private void OnThemeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ThemeCombo.SelectedIndex == 1)
+                AgentThemeManager.ApplyLight();
+            else
+                AgentThemeManager.ApplyDark();
+        }
+
+        private string GetBaseTheme()
+        {
+            var dataContext = DataContext;
+            if (dataContext == null)
+                return "Dark";
+
+            var settingsProperty = dataContext.GetType().GetProperty("Settings");
+            var settings = settingsProperty?.GetValue(dataContext) as SettingsModel;
+            return settings?.BaseTheme ?? "Dark";
         }
 
         /// <summary>Describes a host-provided settings section.</summary>

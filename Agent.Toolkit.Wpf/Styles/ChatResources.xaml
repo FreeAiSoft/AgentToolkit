@@ -10,32 +10,7 @@
         <ResourceDictionary Source="pack://application:,,,/Agent.Toolkit.Wpf;component/Styles/DarkScrollBars.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
-    <!-- Dark theme brushes used by the message controls. Kept here so every message
-         control can merge this dictionary and stay self-contained. -->
-    <SolidColorBrush x:Key="Dark.Text" Color="#F1F1F1"/>
-    <SolidColorBrush x:Key="Dark.ErrorText" Color="#F48771"/>
-    <SolidColorBrush x:Key="Dark.Control" Color="#333337"/>
-    <SolidColorBrush x:Key="Dark.Border" Color="#3F3F46"/>
-
-    <!-- Chat message accent brushes. -->
-    <SolidColorBrush x:Key="Chat.UserBorder" Color="#CC64B5F6"/>
-    <SolidColorBrush x:Key="Chat.UserBackground" Color="#3364B5F6"/>
-    <SolidColorBrush x:Key="Chat.LastActBackground" Color="#0D4CAF50"/>
-    <SolidColorBrush x:Key="Chat.LastActBorder" Color="#4CAF50"/>
-    <SolidColorBrush x:Key="Chat.LastPlanBackground" Color="#0DFF8C00"/>
-    <SolidColorBrush x:Key="Chat.LastPlanBorder" Color="#FF8C00"/>
-    <SolidColorBrush x:Key="Code.Background" Color="#1E1E1E"/>
-    <SolidColorBrush x:Key="Question.OptionBorder" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="Question.AnswerBorder" Color="#9A9A9A"/>
-    <SolidColorBrush x:Key="Question.AnswerBackground" Color="#339A9A9A"/>
-    <SolidColorBrush x:Key="Approval.ApproveBorder" Color="#4CAF50"/>
-    <SolidColorBrush x:Key="Approval.RejectBorder" Color="#F44336"/>
-    <SolidColorBrush x:Key="Approval.DecidedBorder" Color="#9A9A9A"/>
-
-    <!-- Agent mode accent brushes (same colors as the mode toggle under the input box). -->
-    <SolidColorBrush x:Key="Mode.PlanBrush" Color="#64B5F6"/>
-    <SolidColorBrush x:Key="Mode.ActBrush" Color="#4CAF50"/>
-    <SolidColorBrush x:Key="Mode.HelpBrush" Color="#F44336"/>
+    <!-- Theme brushes come from the Dark/Light palette registered by AgentThemeManager. -->
 
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     <conv:MarkdownToElementConverter x:Key="MarkdownToElement"/>
@@ -43,7 +18,7 @@
 
     <Style x:Key="IconButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource Dark.Text}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="4"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -69,12 +44,12 @@
         </Setter>
     </Style>
 
-    <!-- Stealth option buttons for the question control: white text, transparent
+    <!-- Stealth option buttons for the question control: theme text, transparent
          background and a barely visible hover so the options don't pop sharply. -->
     <Style x:Key="Question.OptionButtonStyle" TargetType="Button">
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="{StaticResource Question.OptionBorder}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Theme.QuestionOptionBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="10,4"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -95,10 +70,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#1AFFFFFF"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.QuestionOptionHover}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#26FFFFFF"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.QuestionOptionPressed}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -117,50 +92,50 @@
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderBrush" Value="{StaticResource Dark.Border}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
                                 <Setter Property="BorderThickness" Value="1"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding KindName}" Value="User">
                                         <Setter Property="BorderBrush" Value="Transparent"/>
                                         <Setter Property="BorderThickness" Value="0"/>
-                                        <Setter Property="Background" Value="{StaticResource Chat.UserBackground}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.ChatUserBackground}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="ToolCall">
-                                        <Setter Property="BorderBrush" Value="{StaticResource Dark.Border}"/>
-                                        <Setter Property="Background" Value="{StaticResource Dark.Control}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.Control}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="ToolBlocked">
-                                        <Setter Property="BorderBrush" Value="#B0563C"/>
-                                        <Setter Property="Background" Value="#33221E"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.CardToolBlockedBorder}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.CardToolBlockedBackground}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="Error">
-                                        <Setter Property="BorderBrush" Value="#B0563C"/>
-                                        <Setter Property="Background" Value="#331F1F"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.CardErrorBorder}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.CardErrorBackground}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="Compaction">
-                                        <Setter Property="BorderBrush" Value="#6B6B2E"/>
-                                        <Setter Property="Background" Value="#262618"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.CardCompactionBorder}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.CardCompactionBackground}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="ModeSwitch">
-                                        <Setter Property="BorderBrush" Value="#4A6B9A"/>
-                                        <Setter Property="Background" Value="#1E2733"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.CardModeSwitchBorder}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.CardModeSwitchBackground}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="Question">
-                                        <Setter Property="BorderBrush" Value="#4A6B9A"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.CardModeSwitchBorder}"/>
                                         <Setter Property="Background" Value="Transparent"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="Subagent">
-                                        <Setter Property="BorderBrush" Value="#4A6B9A"/>
-                                        <Setter Property="Background" Value="#1E2733"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.CardSubagentBorder}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.CardSubagentBackground}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="ResultAnswerPlan">
-                                        <Setter Property="BorderBrush" Value="{StaticResource Chat.LastPlanBorder}"/>
-                                        <Setter Property="Background" Value="{StaticResource Chat.LastPlanBackground}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.ChatLastPlanBorder}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.ChatLastPlanBackground}"/>
                                         <Setter Property="BorderThickness" Value="0"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding KindName}" Value="ResultAnswerAct">
-                                        <Setter Property="BorderBrush" Value="{StaticResource Chat.LastActBorder}"/>
-                                        <Setter Property="Background" Value="{StaticResource Chat.LastActBackground}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.ChatLastActBorder}"/>
+                                        <Setter Property="Background" Value="{DynamicResource Theme.ChatLastActBackground}"/>
                                         <Setter Property="BorderThickness" Value="0"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -200,13 +175,13 @@
                                     </Button.Style>
                                     <Viewbox Width="12" Height="12">
                                         <Polyline x:Name="Chevron" Points="6,9 12,15 18,9"
-                                                  Stroke="{StaticResource Dark.Text}" StrokeThickness="2"
+                                                  Stroke="{DynamicResource Theme.Text}" StrokeThickness="2"
                                                   StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                                                   Fill="Transparent"/>
                                     </Viewbox>
                                 </Button>
                                 <TextBlock Grid.Column="1" Text="{Binding MessageTitle}" FontWeight="SemiBold"
-                                           Foreground="{StaticResource Dark.Text}" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Theme.Text}" TextTrimming="CharacterEllipsis"
                                            VerticalAlignment="Center" Margin="8,0,8,0">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
@@ -271,13 +246,13 @@
                                     </TextBlock.Style>
                                 </TextBlock>
                                 <TextBlock Grid.Column="2" Text="{Binding TimestampLocal, StringFormat=HH.mm.ss}"
-                                           Foreground="#9A9A9A" FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0"
+                                           Foreground="{DynamicResource Theme.TextSecondary}" FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0"
                                            ToolTip="{Binding TimestampToolTip}"
                                            Visibility="{Binding ShowTimestamp, RelativeSource={RelativeSource AncestorType=controls:ChatMessagesControl}, Converter={StaticResource BoolToVis}}"/>
                                 <Button x:Name="CopyButton" Grid.Column="3" Style="{StaticResource IconButtonStyle}" Width="16" Height="16"
                                         VerticalAlignment="Center" ToolTip="Copy message">
                                     <Path Data="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
-                                          Fill="{StaticResource Dark.Text}" Stretch="Uniform" Width="12" Height="12"/>
+                                          Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="12" Height="12"/>
                                 </Button>
                             </Grid>
                             <ContentPresenter x:Name="Body" Grid.Row="1" Margin="0,6,0,0"

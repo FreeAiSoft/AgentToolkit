@@ -9,16 +9,14 @@
                 <ResourceDictionary Source="pack://application:,,,/Agent.Toolkit.Wpf;component/Styles/ChatResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Resources not provided by ChatResources.xaml, kept local so the control stays self-contained. -->
-            <SolidColorBrush x:Key="Dark.Panel" Color="#252526"/>
-
+            <!-- Theme brushes come from the Dark/Light palette registered by AgentThemeManager. -->
             <conv:MaterialIconToGeometryConverter x:Key="MaterialIconToGeometry"/>
             <conv:PendingDeliveryToGeometryConverter x:Key="PendingDeliveryToGeometry"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <!-- Visibility is managed from code-behind (UpdateVisibility). -->
-    <Border Background="{StaticResource Dark.Panel}" BorderBrush="{StaticResource Dark.Border}"
+    <Border Background="{DynamicResource Theme.Panel}" BorderBrush="{DynamicResource Theme.Border}"
             BorderThickness="1" CornerRadius="2" Padding="8,6">
         <Grid>
             <Grid.RowDefinitions>
@@ -33,11 +31,11 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="QueuedLabel" FontWeight="Bold" VerticalAlignment="Center"
-                           Foreground="{StaticResource Dark.Text}"/>
+                           Foreground="{DynamicResource Theme.Text}"/>
                 <Button Grid.Column="1" Width="22" Height="22" Click="OnClearAll"
                         Style="{StaticResource IconButtonStyle}" ToolTip="Clear all">
                     <Path Data="{Binding Source={x:Static mi:MaterialIconKind.Broom}, Converter={StaticResource MaterialIconToGeometry}}"
-                          Fill="{StaticResource Dark.Text}" Stretch="Uniform" Width="14" Height="14"/>
+                          Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"/>
                 </Button>
             </Grid>
 
@@ -59,32 +57,32 @@
                                     Style="{StaticResource IconButtonStyle}" Width="22" Height="22"
                                     Margin="0,0,4,0" Click="OnSteer" IsEnabled="{Binding CanSteer}">
                                 <Path Data="{Binding Source={x:Static mi:MaterialIconKind.FastForward}, Converter={StaticResource MaterialIconToGeometry}}"
-                                      Fill="{StaticResource Dark.Text}" Stretch="Uniform" Width="12" Height="12"/>
+                                      Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="12" Height="12"/>
                             </Button>
 
                             <TextBox Grid.Column="1" Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Background="Transparent" BorderThickness="0" Padding="0"
                                      VerticalAlignment="Center" TextWrapping="NoWrap"
-                                     Foreground="{StaticResource Dark.Text}" CaretBrush="{StaticResource Dark.Text}"/>
+                                     Foreground="{DynamicResource Theme.Text}" CaretBrush="{DynamicResource Theme.Text}"/>
 
                             <TextBlock Grid.Column="2" Text="{Binding AttachmentSummary, Mode=OneWay}"
                                        VerticalAlignment="Center" Margin="6,0,4,0"
-                                       Foreground="{StaticResource Dark.Text}"
+                                       Foreground="{DynamicResource Theme.Text}"
                                        Visibility="{Binding HasAttachments, Converter={StaticResource BoolToVis}}"/>
 
                             <Button Grid.Column="3" Style="{StaticResource IconButtonStyle}"
                                     Width="22" Height="22" Margin="0,0,2,0" Click="OnMoveUp" ToolTip="Move up">
                                 <Path Data="{Binding Source={x:Static mi:MaterialIconKind.ChevronUp}, Converter={StaticResource MaterialIconToGeometry}}"
-                                      Fill="{StaticResource Dark.Text}" Stretch="Uniform" Width="12" Height="12"/>
+                                      Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="12" Height="12"/>
                             </Button>
                             <Button Grid.Column="4" Style="{StaticResource IconButtonStyle}"
                                     Width="22" Height="22" Margin="0,0,2,0" Click="OnMoveDown" ToolTip="Move down">
                                 <Path Data="{Binding Source={x:Static mi:MaterialIconKind.ChevronDown}, Converter={StaticResource MaterialIconToGeometry}}"
-                                      Fill="{StaticResource Dark.Text}" Stretch="Uniform" Width="12" Height="12"/>
+                                      Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="12" Height="12"/>
                             </Button>
                             <Button Grid.Column="5" Style="{StaticResource IconButtonStyle}"
                                     Width="22" Height="22" Click="OnDelete" ToolTip="Remove from queue">
-                                <TextBlock Text="✕" FontSize="11" Foreground="{StaticResource Dark.Text}"/>
+                                <TextBlock Text="✕" FontSize="11" Foreground="{DynamicResource Theme.Text}"/>
                             </Button>
                         </Grid>
                     </DataTemplate>

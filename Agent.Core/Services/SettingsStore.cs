@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using Agent.Core.Providers;
 using Agent.Core.Services;
 
 namespace Agent.Core.Services
@@ -12,6 +13,9 @@ namespace Agent.Core.Services
         public string BaseUrl { get; set; } = "https://api.openai.com/v1";
         public string ApiKey { get; set; } = "";
         public string Model { get; set; } = "gpt-4o-mini";
+
+        /// <summary>Selected AI provider id (see <see cref="Agent.Core.Providers.AiProviderId"/>). Empty defaults to OpenAI.</summary>
+        public string ProviderId { get; set; } = "";
 
         /// <summary>Sampling temperature sent to the model (0..1).</summary>
         public double Temperature { get; set; } = 0.2;
@@ -204,6 +208,7 @@ namespace Agent.Core.Services
         public static void Normalize(SettingsData settings)
         {
             if (settings == null) return;
+            settings.ProviderId = AiProviderId.Normalize(settings.ProviderId);
             if (settings.ContextWindowSize <= 0)
                 settings.ContextWindowSize = 409600;
             if (double.IsNaN(settings.Temperature) || settings.Temperature < 0.0 || settings.Temperature > 1.0)

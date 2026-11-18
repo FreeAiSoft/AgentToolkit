@@ -16,7 +16,7 @@
             <conv:MermaidCodeToElementConverter x:Key="MermaidCodeToElement"/>
 
             <Style x:Key="CodeScrollBarStyle" TargetType="ScrollBar">
-                <Setter Property="Background" Value="#2E2E30"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.ScrollBackground}"/>
                 <Setter Property="MinWidth" Value="10"/>
                 <Setter Property="MinHeight" Value="10"/>
                 <Setter Property="Height" Value="10"/>
@@ -80,10 +80,10 @@
                          IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
-                            <Setter Property="Foreground" Value="{StaticResource Dark.Text}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding DataContext.KindName, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="Error">
-                                    <Setter Property="Foreground" Value="{StaticResource Dark.ErrorText}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.ErrorText}"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -94,7 +94,7 @@
 
             <DataTemplate DataType="{x:Type core:CodeMessageBlock}">
                 <Grid>
-                    <Border x:Name="CodeBorder" Background="{StaticResource Code.Background}" BorderBrush="{StaticResource Dark.Border}"
+                    <Border x:Name="CodeBorder" Background="{DynamicResource Theme.CodeBackground}" BorderBrush="{DynamicResource Theme.Border}"
                             BorderThickness="1" CornerRadius="2" Padding="8,6" Margin="0,4,0,0">
                         <ScrollViewer Style="{StaticResource CodeScrollViewerStyle}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                             <ContentControl Content="{Binding Tokens, Mode=OneWay, Converter={StaticResource CodeToTextBlock}}"/>

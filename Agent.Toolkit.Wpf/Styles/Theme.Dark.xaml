@@ -1,0 +1,71 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Dark palette. Theme-neutral brush keys: the controls reference these via DynamicResource,
+        so swapping the palette in Application.Current.Resources re-colors the UI live.
+    -->
+
+    <!-- General chrome -->
+    <SolidColorBrush x:Key="Theme.Window" Color="#2D2D30"/>
+    <SolidColorBrush x:Key="Theme.Panel" Color="#252526"/>
+    <SolidColorBrush x:Key="Theme.Control" Color="#333337"/>
+    <SolidColorBrush x:Key="Theme.ControlHover" Color="#3E3E42"/>
+    <SolidColorBrush x:Key="Theme.ControlPressed" Color="#264F78"/>
+    <SolidColorBrush x:Key="Theme.Accent" Color="#264F78"/>
+    <SolidColorBrush x:Key="Theme.Highlight" Color="#64B5F6"/>
+    <SolidColorBrush x:Key="Theme.Border" Color="#3F3F46"/>
+    <SolidColorBrush x:Key="Theme.Text" Color="#F1F1F1"/>
+    <SolidColorBrush x:Key="Theme.ErrorText" Color="#F48771"/>
+    <SolidColorBrush x:Key="Theme.TextSecondary" Color="#9A9A9A"/>
+    <SolidColorBrush x:Key="Theme.TextMuted" Color="#C8C8C8"/>
+
+    <!-- Code blocks -->
+    <SolidColorBrush x:Key="Theme.CodeBackground" Color="#1E1E1E"/>
+
+    <!-- Scrollbars -->
+    <SolidColorBrush x:Key="Theme.ScrollThumb" Color="#D0D0D0"/>
+    <SolidColorBrush x:Key="Theme.ScrollThumbHover" Color="#E8E8E8"/>
+    <SolidColorBrush x:Key="Theme.ScrollThumbDrag" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.ScrollBackground" Color="#2E2E30"/>
+
+    <!-- Chat message accents -->
+    <SolidColorBrush x:Key="Theme.ChatUserBorder" Color="#CC64B5F6"/>
+    <SolidColorBrush x:Key="Theme.ChatUserBackground" Color="#3364B5F6"/>
+    <SolidColorBrush x:Key="Theme.ChatLastActBackground" Color="#0D4CAF50"/>
+    <SolidColorBrush x:Key="Theme.ChatLastActBorder" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="Theme.ChatLastPlanBackground" Color="#0DFF8C00"/>
+    <SolidColorBrush x:Key="Theme.ChatLastPlanBorder" Color="#FF8C00"/>
+
+    <!-- Question / approval -->
+    <SolidColorBrush x:Key="Theme.QuestionOptionBorder" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.QuestionOptionHover" Color="#1AFFFFFF"/>
+    <SolidColorBrush x:Key="Theme.QuestionOptionPressed" Color="#26FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.QuestionAnswerBorder" Color="#9A9A9A"/>
+    <SolidColorBrush x:Key="Theme.QuestionAnswerBackground" Color="#339A9A9A"/>
+    <SolidColorBrush x:Key="Theme.ApprovalApprove" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="Theme.ApprovalReject" Color="#F44336"/>
+    <SolidColorBrush x:Key="Theme.ApprovalDecided" Color="#9A9A9A"/>
+
+    <!-- Agent mode accents -->
+    <SolidColorBrush x:Key="Theme.ModePlan" Color="#64B5F6"/>
+    <SolidColorBrush x:Key="Theme.ModeAct" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="Theme.ModeHelp" Color="#F44336"/>
+
+    <!-- Message card semantic accents -->
+    <SolidColorBrush x:Key="Theme.CardToolBlockedBorder" Color="#B0563C"/>
+    <SolidColorBrush x:Key="Theme.CardToolBlockedBackground" Color="#33221E"/>
+    <SolidColorBrush x:Key="Theme.CardErrorBorder" Color="#B0563C"/>
+    <SolidColorBrush x:Key="Theme.CardErrorBackground" Color="#331F1F"/>
+    <SolidColorBrush x:Key="Theme.CardCompactionBorder" Color="#6B6B2E"/>
+    <SolidColorBrush x:Key="Theme.CardCompactionBackground" Color="#262618"/>
+    <SolidColorBrush x:Key="Theme.CardModeSwitchBorder" Color="#4A6B9A"/>
+    <SolidColorBrush x:Key="Theme.CardModeSwitchBackground" Color="#1E2733"/>
+    <SolidColorBrush x:Key="Theme.CardSubagentBorder" Color="#4A6B9A"/>
+    <SolidColorBrush x:Key="Theme.CardSubagentBackground" Color="#1E2733"/>
+
+    <!-- Context indicator -->
+    <SolidColorBrush x:Key="Theme.ContextTrackBackground" Color="#33FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.ContextCacheHit" Color="#A5D6A7"/>
+    <SolidColorBrush x:Key="Theme.ContextMiss" Color="#6E6E6E"/>
+</ResourceDictionary>

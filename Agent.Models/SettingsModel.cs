@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Agent.Core.AgentTools;
 using Agent.Core.Contracts;
+using Agent.Core.Providers;
 using Agent.Core.Services;
 using Agent.Mvvm;
 
@@ -26,6 +27,7 @@ namespace Agent.Models
         private string _baseUrl = "https://api.openai.com/v1";
         private string _apiKey = "";
         private string _model = "gpt-4o-mini";
+        private string _providerId = "";
         private double _temperature = 0.2;
         private string _reasoningEffort = "";
         private string _skillsPath = "";
@@ -163,6 +165,7 @@ namespace Agent.Models
                 BaseUrl = _baseUrl,
                 ApiKey = _apiKey,
                 Model = _model,
+                ProviderId = _providerId,
                 Temperature = _temperature,
                 ReasoningEffort = _reasoningEffort,
                 SkillsPath = _skillsPath,
@@ -304,6 +307,7 @@ namespace Agent.Models
             if (data == null)
                 return;
 
+            ProviderId = AiProviderId.Normalize(data.ProviderId);
             BaseUrl = data.BaseUrl;
             ApiKey = data.ApiKey;
             Model = data.Model;
@@ -621,6 +625,64 @@ namespace Agent.Models
 
         public string Model { get => _model; set => SetProperty(ref _model, value); }
 
+        /// <summary>Selected AI provider id (normalized). Changing it applies the provider's default base URL / model.</summary>
+        public string ProviderId
+        {
+            get => _providerId;
+            set
+            {
+                var normalized = AiProviderId.Normalize(value);
+                if (SetProperty(ref _providerId, normalized))
+                {
+                    OnPropertyChanged(nameof(ProviderDisplayName));
+                    OnPropertyChanged(nameof(ProviderIndex));
+                    ApplyProviderDefaults();
+                }
+            }
+        }
+
+        /// <summary>Display name of the selected provider (from the catalog).</summary>
+        public string ProviderDisplayName
+        {
+            get
+            {
+                var spec = AiProviderCatalog.Find(_providerId);
+                return spec != null ? spec.DisplayName : _providerId;
+            }
+        }
+
+        /// <summary>Zero-based index of the selected provider within <see cref="AiProviderCatalog.All"/>.</summary>
+        public int ProviderIndex
+        {
+            get
+            {
+                var all = AiProviderCatalog.All;
+                for (var i = 0; i < all.Count; i++)
+                {
+                    if (string.Equals(all[i].Id, _providerId, StringComparison.OrdinalIgnoreCase))
+                        return i;
+                }
+                return 0;
+            }
+            set
+            {
+                var all = AiProviderCatalog.All;
+                if (all.Count == 0) return;
+                var index = value < 0 ? 0 : (value >= all.Count ? all.Count - 1 : value);
+                ProviderId = all[index].Id;
+            }
+        }
+
+        /// <summary>Applies the selected provider's default base URL, model and context window.</summary>
+        public void ApplyProviderDefaults()
+        {
+            var spec = AiProviderCatalog.Find(_providerId);
+            if (spec == null) return;
+            if (!string.IsNullOrWhiteSpace(spec.DefaultBaseUrl)) BaseUrl = spec.DefaultBaseUrl;
+            if (!string.IsNullOrWhiteSpace(spec.DefaultModel)) Model = spec.DefaultModel;
+            if (spec.ContextWindowSize > 0) ContextWindowSize = spec.ContextWindowSize;
+        }
+
         public double Temperature
         {
             get => _temperature;
@@ -779,11 +841,26 @@ namespace Agent.Models
 
         public string ProxyPassword { get => _proxyPassword; set => SetProperty(ref _proxyPassword, value); }
 
-        public string BaseTheme { get => _baseTheme; set => SetProperty(ref _baseTheme, value); }
+        public string BaseTheme
+        {
+            get => _baseTheme;
+            set
+            {
+                if (SetProperty(ref _baseTheme, value))
+                    OnPropertyChanged(nameof(ThemeIndex));
+            }
+        }
 
         public string PrimaryHex { get => _primaryHex; set => SetProperty(ref _primaryHex, value); }
 
         public string SecondaryHex { get => _secondaryHex; set => SetProperty(ref _secondaryHex, value); }
+
+        /// <summary>Combo index of <see cref="BaseTheme"/>: 0 = Dark, 1 = Light.</summary>
+        public int ThemeIndex
+        {
+            get => string.Equals(_baseTheme, "Light", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            set => BaseTheme = value == 1 ? "Light" : "Dark";
+        }
 
         /// <summary>Combo index of <see cref="ToolCallingMode"/>: 0 = JsonChat, 1 = Native.</summary>
         public int ToolCallingModeIndex

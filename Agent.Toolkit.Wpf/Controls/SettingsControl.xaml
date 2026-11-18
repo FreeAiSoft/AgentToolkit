@@ -52,6 +52,13 @@
                         <Path Style="{StaticResource SettingsNavIconFilledStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.Microphone}, Converter={StaticResource MaterialIconToGeometry}}" />
                     </Grid>
                 </ListBoxItem>
+                <ListBoxItem ToolTip="Theme">
+                    <Grid>
+                        <Path Style="{StaticResource SettingsNavIconOutlineStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.PaletteOutline}, Converter={StaticResource MaterialIconToGeometry}}" />
+                        <Path Style="{StaticResource SettingsNavIconFilledStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.Palette}, Converter={StaticResource MaterialIconToGeometry}}" />
+                    </Grid>
+                </ListBoxItem>
+
             </ListBox>
             <TabControl x:Name="SettingsSubTabs" Grid.Column="1"
                         SelectedIndex="{Binding SelectedIndex, ElementName=SettingsNav}"
@@ -161,7 +168,7 @@
                                                    VerticalAlignment="Center"
                                                    Margin="10,0,0,0"
                                                    Width="40"
-                                                   Foreground="{StaticResource Dark.Text}" />
+                                                   Foreground="{DynamicResource Theme.Text}" />
                                     </StackPanel>
 
                                     <TextBlock Grid.Row="4"
@@ -237,7 +244,7 @@
                                               IsChecked="{Binding Settings.AutoCompact, Mode=TwoWay}"
                                               Content="Auto-compact (summarize)"
                                               Margin="0,2,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
 
                                     <CheckBox Grid.Row="11"
                                               Grid.Column="0"
@@ -246,7 +253,7 @@
                                               IsChecked="{Binding Settings.UseToolRole, Mode=TwoWay}"
                                               Content="Use 'tool' role for tool results"
                                               Margin="0,2,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
 
                                     <TextBlock Grid.Row="12"
                                                Grid.Column="0"
@@ -363,7 +370,7 @@
                                               IsChecked="{Binding Settings.AllowSubagents, Mode=TwoWay}"
                                               Content="Enable sub-agents (spawn_agent)"
                                               Margin="0,2,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
 
                                     <TextBlock Grid.Row="22"
                                                Grid.Column="0"
@@ -394,7 +401,7 @@
                                               IsChecked="{Binding Settings.CheckpointsEnabled, Mode=TwoWay}"
                                               Content="Enable checkpoints (auto-snapshot by iteration diffs)"
                                               Margin="0,2,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
 
                                     <TextBlock Grid.Row="25"
                                                Grid.Column="0"
@@ -435,7 +442,7 @@
                                               IsChecked="{Binding Settings.StagnantLoopNudge, Mode=TwoWay}"
                                               Content="Nudge the model once before stopping a stagnant loop"
                                               Margin="0,2,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
 
                                     <TextBlock Grid.Row="28"
                                                Grid.Column="0"
@@ -468,7 +475,7 @@
                                               IsChecked="{Binding Settings.NoRetryOn4xx, Mode=TwoWay}"
                                               Content="Do not retry 4xx errors (400/401/403/404/422)"
                                               Margin="0,8,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
 
                                 </Grid>
                             </ScrollViewer>
@@ -485,7 +492,7 @@
                                                     <TextBlock Text="{Binding Name}"
                                                                FontWeight="Bold"
                                                                Margin="0,0,0,2"
-                                                               Foreground="{StaticResource Dark.Text}" />
+                                                               Foreground="{DynamicResource Theme.Text}" />
                                                     <ItemsControl ItemsSource="{Binding Items}"
                                                                   Margin="12,0,0,0">
                                                         <ItemsControl.ItemTemplate>
@@ -493,7 +500,7 @@
                                                                 <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay}"
                                                                           Margin="0,1,0,1"
                                                                           VerticalAlignment="Center"
-                                                                          Foreground="{StaticResource Dark.Text}">
+                                                                          Foreground="{DynamicResource Theme.Text}">
                                                                     <TextBlock TextWrapping="Wrap"
                                                                                MaxWidth="600">
                                                             <Run Text="{Binding Name, Mode=OneWay}"
@@ -595,7 +602,7 @@
                                               IsChecked="{Binding Settings.AddressByName, Mode=TwoWay}"
                                               Content="Address me by name"
                                               Margin="0,2,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
 
                                     <CheckBox Grid.Row="4"
                                               Grid.Column="0"
@@ -604,7 +611,7 @@
                                               IsChecked="{Binding Settings.ShowControls, Mode=TwoWay}"
                                               Content="Show controls"
                                               Margin="0,8,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
 
                                     <TextBlock Grid.Row="5"
                                                Grid.Column="0"
@@ -612,7 +619,7 @@
                                                Text="Agent read scope (Plan mode)"
                                                VerticalAlignment="Center"
                                                Margin="0,8,0,2"
-                                               Foreground="{StaticResource Dark.Text}" />
+                                               Foreground="{DynamicResource Theme.Text}" />
                                     <DockPanel Grid.Row="6"
                                                Grid.Column="0"
                                                Grid.ColumnSpan="2"
@@ -632,16 +639,16 @@
                                                  ItemsSource="{Binding Settings.AdditionalReadPaths}"
                                                  SelectedItem="{Binding Settings.SelectedReadPath, Mode=TwoWay}"
                                                  Height="80"
-                                                 Background="{StaticResource Dark.Panel}"
-                                                 Foreground="{StaticResource Dark.Text}"
-                                                 BorderBrush="{StaticResource Dark.Border}"
+                                                 Background="{DynamicResource Theme.Panel}"
+                                                 Foreground="{DynamicResource Theme.Text}"
+                                                 BorderBrush="{DynamicResource Theme.Border}"
                                                  BorderThickness="1"
                                                  Padding="2"
                                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
                                             <ListBox.ItemContainerStyle>
                                                 <Style TargetType="ListBoxItem">
                                                     <Setter Property="Foreground"
-                                                            Value="{StaticResource Dark.Text}" />
+                                                            Value="{DynamicResource Theme.Text}" />
                                                     <Setter Property="Background"
                                                             Value="Transparent" />
                                                     <Setter Property="Padding"
@@ -665,13 +672,13 @@
                                                                              Value="True">
                                                                         <Setter TargetName="Bd"
                                                                                 Property="Background"
-                                                                                Value="{StaticResource Dark.ControlHover}" />
+                                                                                Value="{DynamicResource Theme.ControlHover}" />
                                                                     </Trigger>
                                                                     <Trigger Property="IsSelected"
                                                                              Value="True">
                                                                         <Setter TargetName="Bd"
                                                                                 Property="Background"
-                                                                                Value="{StaticResource Dark.Accent}" />
+                                                                                Value="{DynamicResource Theme.Accent}" />
                                                                     </Trigger>
                                                                 </ControlTemplate.Triggers>
                                                             </ControlTemplate>
@@ -689,7 +696,7 @@
                                         <CheckBox x:Name="DenyServiceDirectoriesCheckBox"
                                                   IsChecked="{Binding Settings.DenyServiceDirectories, Mode=TwoWay}"
                                                   Content="Deny service/build directories"
-                                                  Foreground="{StaticResource Dark.Text}" />
+                                                  Foreground="{DynamicResource Theme.Text}" />
                                         <TextBlock Text="Blocks the agent from reading files inside: bin, obj, .git, .vs, node_modules, packages, TestResults, .idea, .vscode, __pycache__."
                                                    FontSize="11"
                                                    Foreground="#C8C8C8"
@@ -704,7 +711,7 @@
                                         <CheckBox x:Name="DenySensitiveFilesCheckBox"
                                                   IsChecked="{Binding Settings.DenySensitiveFiles, Mode=TwoWay}"
                                                   Content="Deny sensitive/secret files"
-                                                  Foreground="{StaticResource Dark.Text}" />
+                                                  Foreground="{DynamicResource Theme.Text}" />
                                         <TextBlock Text="Blocks the agent from reading: .env, web.config, SSH keys (id_rsa, id_dsa, id_ecdsa, id_ed25519), keys and certificates (*.pem, *.key, *.pfx, *.p12, *.snk, *.rdp, *.user, *.secret), appsettings*.json, and any file whose name contains &quot;credential&quot;."
                                                    FontSize="11"
                                                    Foreground="#C8C8C8"
@@ -826,10 +833,38 @@
                                               IsChecked="{Binding Settings.SpeechAutoSend, Mode=TwoWay}"
                                               Content="Auto-send voice input"
                                               Margin="0,2,0,4"
-                                              Foreground="{StaticResource Dark.Text}" />
+                                              Foreground="{DynamicResource Theme.Text}" />
                                 </Grid>
                             </ScrollViewer>
                         </TabItem>
+                        <TabItem>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <Grid Margin="8"
+                                      VerticalAlignment="Top">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="Theme"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <ComboBox Grid.Column="1"
+                                              x:Name="ThemeCombo"
+                                              Width="160"
+                                              HorizontalAlignment="Left"
+                                              SelectedIndex="{Binding Settings.ThemeIndex, Mode=TwoWay}"
+                                              SelectionChanged="OnThemeSelectionChanged"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,0,4">
+                                        <ComboBoxItem Content="Dark" />
+                                        <ComboBoxItem Content="Light" />
+                                    </ComboBox>
+                                </Grid>
+                            </ScrollViewer>
+                        </TabItem>
+
             </TabControl>
         </Grid>
     </Grid>

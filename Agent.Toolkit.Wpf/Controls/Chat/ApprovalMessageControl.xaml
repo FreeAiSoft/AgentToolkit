@@ -12,9 +12,9 @@
     <chat:ChatMessageCard>
         <StackPanel>
             <TextBlock Text="{Binding Payload.ToolName}" TextWrapping="Wrap" FontWeight="SemiBold"
-                       Foreground="{StaticResource Dark.Text}"/>
+                       Foreground="{DynamicResource Theme.Text}"/>
             <TextBlock Text="{Binding Payload.Description}" TextWrapping="Wrap"
-                       Foreground="{StaticResource Dark.Text}" Margin="0,5,0,0">
+                       Foreground="{DynamicResource Theme.Text}" Margin="0,5,0,0">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
                         <Style.Triggers>
@@ -33,29 +33,29 @@
                         Visibility="{Binding Payload.ShowButtons, Converter={StaticResource BoolToVis}}">
                 <Button Content="Approve" Click="OnApproveClick"
                         Style="{StaticResource Question.OptionButtonStyle}"
-                        BorderBrush="{StaticResource Approval.ApproveBorder}" Margin="0,0,6,0"/>
+                        BorderBrush="{DynamicResource Theme.ApprovalApprove}" Margin="0,0,6,0"/>
                 <Button Content="Reject" Click="OnRejectClick"
                         Style="{StaticResource Question.OptionButtonStyle}"
-                        BorderBrush="{StaticResource Approval.RejectBorder}" Margin="0,0,6,0"/>
+                        BorderBrush="{DynamicResource Theme.ApprovalReject}" Margin="0,0,6,0"/>
                 <Button Content="Approve all" Click="OnApproveAllClick"
                         Style="{StaticResource Question.OptionButtonStyle}"
-                        BorderBrush="{StaticResource Approval.ApproveBorder}" Margin="0,0,6,0"/>
+                        BorderBrush="{DynamicResource Theme.ApprovalApprove}" Margin="0,0,6,0"/>
                 <Button Content="Reject all" Click="OnRejectAllClick"
                         Style="{StaticResource Question.OptionButtonStyle}"
-                        BorderBrush="{StaticResource Approval.RejectBorder}"/>
+                        BorderBrush="{DynamicResource Theme.ApprovalReject}"/>
             </StackPanel>
 
             <!-- Decision line: collapsed to 0 height while pending, 5px margin once shown. -->
             <Border Margin="0,5,0,0"
                     Background="#00000000"
-                    BorderBrush="{StaticResource Approval.DecidedBorder}"
+                    BorderBrush="{DynamicResource Theme.ApprovalDecided}"
                     BorderThickness="1"
                     CornerRadius="3"
                     Padding="8,4"
                     Visibility="{Binding Payload.IsDecided, Converter={StaticResource BoolToVis}}">
                 <TextBlock TextWrapping="Wrap">
-                    <Run Text="Decision: " FontWeight="SemiBold" Foreground="{StaticResource Dark.Text}"/>
-                    <Run Text="{Binding Payload.DecisionText, Mode=OneWay}" Foreground="{StaticResource Dark.Text}"/>
+                    <Run Text="Decision: " FontWeight="SemiBold" Foreground="{DynamicResource Theme.Text}"/>
+                    <Run Text="{Binding Payload.DecisionText, Mode=OneWay}" Foreground="{DynamicResource Theme.Text}"/>
                 </TextBlock>
             </Border>
         </StackPanel>

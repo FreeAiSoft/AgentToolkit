@@ -12,7 +12,7 @@
     <chat:ChatMessageCard>
         <StackPanel>
             <TextBlock Text="{Binding Payload.Question}" TextWrapping="Wrap" FontWeight="SemiBold"
-                       Foreground="{StaticResource Dark.Text}"/>
+                       Foreground="{DynamicResource Theme.Text}"/>
             <StackPanel Margin="0,8,0,0">
                 <StackPanel.Style>
                     <Style TargetType="StackPanel">
@@ -38,8 +38,8 @@
                                                         <Binding Path="DataContext.Payload.Answer" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
                                                     </MultiBinding>
                                                 </DataTrigger.Binding>
-                                                <Setter Property="BorderBrush" Value="{StaticResource Question.AnswerBorder}"/>
-                                                <Setter Property="Background" Value="{StaticResource Question.AnswerBackground}"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource Theme.QuestionAnswerBorder}"/>
+                                                <Setter Property="Background" Value="{DynamicResource Theme.QuestionAnswerBackground}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -54,8 +54,8 @@
                         <Style TargetType="Button" BasedOn="{StaticResource Question.OptionButtonStyle}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Payload.IsSkipped}" Value="True">
-                                    <Setter Property="BorderBrush" Value="{StaticResource Question.AnswerBorder}"/>
-                                    <Setter Property="Background" Value="{StaticResource Question.AnswerBackground}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.QuestionAnswerBorder}"/>
+                                    <Setter Property="Background" Value="{DynamicResource Theme.QuestionAnswerBackground}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -64,13 +64,13 @@
             </StackPanel>
 
             <Border Margin="0,8,0,0"
-                    Background="{StaticResource Chat.LastActBackground}"
+                    Background="{DynamicResource Theme.ChatLastActBackground}"
                     CornerRadius="3"
                     Padding="8,4"
                     Visibility="{Binding Payload.IsFreeTextAnswer, Converter={StaticResource BoolToVis}}">
                 <TextBlock TextWrapping="Wrap">
-                    <Run Text="Answer: " FontWeight="SemiBold" Foreground="{StaticResource Dark.Text}"/>
-                    <Run Text="{Binding Payload.Answer}" Foreground="{StaticResource Dark.Text}"/>
+                    <Run Text="Answer: " FontWeight="SemiBold" Foreground="{DynamicResource Theme.Text}"/>
+                    <Run Text="{Binding Payload.Answer}" Foreground="{DynamicResource Theme.Text}"/>
                 </TextBlock>
             </Border>
         </StackPanel>

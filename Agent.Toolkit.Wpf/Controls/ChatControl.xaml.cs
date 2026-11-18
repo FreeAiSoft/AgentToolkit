@@ -15,6 +15,7 @@ using Agent.Core.Contracts;
 using Agent.Core.Models;
 using Agent.Core.Services;
 using Agent.Models;
+using Agent.Toolkit.Wpf.Theming;
 using Microsoft.Win32;
 
 namespace Agent.Toolkit.Wpf.Controls
@@ -40,6 +41,7 @@ namespace Agent.Toolkit.Wpf.Controls
         public ChatControl()
         {
             InitializeComponent();
+            AgentThemeManager.EnsureInitialized();
             DataContextChanged += OnDataContextChanged;
         }
 
@@ -796,7 +798,7 @@ namespace Agent.Toolkit.Wpf.Controls
                 ? Brushes.Orange
                 : recording
                     ? Brushes.Red
-                    : (Brush)FindResource("Dark.Text");
+                    : (Brush)FindResource("Theme.Text");
         }
 
         private void ShowVoiceError(string text)

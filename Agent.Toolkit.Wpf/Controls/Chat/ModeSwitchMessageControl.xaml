@@ -10,20 +10,20 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal" Margin="8,4,0,7">
-        <TextBlock Text="Mode: " Foreground="{StaticResource Dark.Text}" VerticalAlignment="Center"/>
+        <TextBlock Text="Mode: " Foreground="{DynamicResource Theme.Text}" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding Mode, Mode=OneWay}" VerticalAlignment="Center">
             <TextBlock.Style>
                 <Style TargetType="TextBlock">
-                    <Setter Property="Foreground" Value="{StaticResource Dark.Text}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Mode}" Value="Act">
-                            <Setter Property="Foreground" Value="{StaticResource Mode.ActBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Theme.ModeAct}"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Mode}" Value="Plan">
-                            <Setter Property="Foreground" Value="{StaticResource Mode.PlanBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Theme.ModePlan}"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Mode}" Value="Help">
-                            <Setter Property="Foreground" Value="{StaticResource Mode.HelpBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Theme.ModeHelp}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>

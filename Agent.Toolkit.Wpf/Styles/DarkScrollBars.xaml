@@ -32,7 +32,7 @@
     <Style x:Key="ScrollBarThumb" TargetType="Thumb">
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="IsTabStop" Value="False"/>
-        <Setter Property="Background" Value="#D0D0D0"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.ScrollThumb}"/>
         <Setter Property="MinWidth" Value="10"/>
         <Setter Property="MinHeight" Value="10"/>
         <Setter Property="Template">
@@ -44,17 +44,17 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#E8E8E8"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.ScrollThumbHover}"/>
             </Trigger>
             <Trigger Property="IsDragging" Value="True">
-                <Setter Property="Background" Value="#FFFFFF"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.ScrollThumbDrag}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
 
     <!-- Implicit dark, thin scrollbar style: applies to every ScrollBar in the UI. -->
     <Style TargetType="ScrollBar">
-        <Setter Property="Background" Value="#2E2E30"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.ScrollBackground}"/>
         <Setter Property="MinWidth" Value="10"/>
         <Setter Property="MinHeight" Value="10"/>
         <Setter Property="Template">

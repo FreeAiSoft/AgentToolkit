@@ -12,14 +12,14 @@
     <chat:ChatMessageCard>
         <StackPanel>
             <Expander Header="{Binding ReasoningHeader, Mode=OneWay}" IsExpanded="{Binding IsThinking, Mode=OneWay}"
-                      Foreground="{StaticResource Dark.Text}"
+                      Foreground="{DynamicResource Theme.Text}"
                       Visibility="{Binding ShowReasoning, Converter={StaticResource BoolToVis}}">
                 <TextBox Text="{Binding ReasoningDisplayText, Mode=OneWay}" TextWrapping="Wrap"
-                         Foreground="#C8C8C8" FontStyle="Italic"
+                         Foreground="{DynamicResource Theme.TextMuted}" FontStyle="Italic"
                          IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0"/>
             </Expander>
             <TextBlock Text="{Binding Label, Mode=OneWay}" FontWeight="SemiBold"
-                       Foreground="{StaticResource Dark.Text}" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                       Foreground="{DynamicResource Theme.Text}" TextWrapping="Wrap" Margin="0,0,0,4"/>
             <ContentControl Content="{Binding Text, Mode=OneWay, Converter={StaticResource MarkdownToElement}}"/>
         </StackPanel>
     </chat:ChatMessageCard>

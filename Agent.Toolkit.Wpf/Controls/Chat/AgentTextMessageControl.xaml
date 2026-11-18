@@ -14,10 +14,10 @@
             <ScrollViewer MaxHeight="200"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
-                          Background="Black"
+                          Background="{DynamicResource Theme.CodeBackground}"
                           Visibility="{Binding ShowReasoning, Converter={StaticResource BoolToVis}}">
                 <TextBox Text="{Binding ReasoningDisplayText, Mode=OneWay}" TextWrapping="Wrap"
-                         Foreground="#C8C8C8" FontStyle="Italic"
+                         Foreground="{DynamicResource Theme.TextMuted}" FontStyle="Italic"
                          IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0"/>
             </ScrollViewer>
             <ItemsControl ItemsSource="{Binding Blocks, Mode=OneWay}">

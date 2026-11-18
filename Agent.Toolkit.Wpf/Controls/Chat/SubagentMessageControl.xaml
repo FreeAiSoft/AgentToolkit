@@ -11,16 +11,16 @@
     </UserControl.Resources>
     <chat:ChatMessageCard>
         <StackPanel>
-            <TextBlock Text="{Binding Payload.Item.Prompt}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="{StaticResource Dark.Text}"/>
-            <TextBlock Text="{Binding Payload.Item.StatusText}" Foreground="#C8C8C8" Margin="0,4,0,0"/>
-            <TextBlock Text="{Binding Payload.Item.LatestToolCall}" Foreground="#9A9A9A" FontFamily="Consolas" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Payload.Item.LatestToolCall}"/>
-            <Expander Header="Show output" Margin="0,8,0,0" Foreground="{StaticResource Dark.Text}" IsExpanded="False"
+            <TextBlock Text="{Binding Payload.Item.Prompt}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="{DynamicResource Theme.Text}"/>
+            <TextBlock Text="{Binding Payload.Item.StatusText}" Foreground="{DynamicResource Theme.TextMuted}" Margin="0,4,0,0"/>
+            <TextBlock Text="{Binding Payload.Item.LatestToolCall}" Foreground="{DynamicResource Theme.TextSecondary}" FontFamily="Consolas" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Payload.Item.LatestToolCall}"/>
+            <Expander Header="Show output" Margin="0,8,0,0" Foreground="{DynamicResource Theme.Text}" IsExpanded="False"
                       Visibility="{Binding Payload.Item.HasOutput, Converter={StaticResource BoolToVis}}">
                 <TextBox Text="{Binding Payload.Item.Result, Mode=OneWay}" TextWrapping="Wrap"
                          IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0"
-                         Foreground="{StaticResource Dark.Text}" MaxHeight="400" VerticalScrollBarVisibility="Auto"/>
+                         Foreground="{DynamicResource Theme.Text}" MaxHeight="400" VerticalScrollBarVisibility="Auto"/>
             </Expander>
-            <TextBlock Text="{Binding Payload.Item.Error}" Foreground="{StaticResource Dark.ErrorText}" TextWrapping="Wrap" Margin="0,6,0,0"
+            <TextBlock Text="{Binding Payload.Item.Error}" Foreground="{DynamicResource Theme.ErrorText}" TextWrapping="Wrap" Margin="0,6,0,0"
                        Visibility="{Binding Payload.Item.HasError, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
     </chat:ChatMessageCard>
