@@ -1,0 +1,836 @@
+﻿<UserControl x:Class="Agent.Toolkit.Wpf.Controls.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons;assembly=Material.Icons">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Agent.Toolkit.Wpf;component/Styles/AgentTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ContentControl x:Name="HostBannerSlot" Grid.Row="0" Margin="8,8,8,4" Visibility="Collapsed" x:FieldModifier="public"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="8,4,8,4">
+            <Button Content="Save settings" Margin="0,5,8,0" Command="{Binding Cmd}" CommandParameter="SaveSettingsCommand"/>
+            <ContentControl x:Name="HostToolbarSlot" x:FieldModifier="public"/>
+        </StackPanel>
+        <Grid Grid.Row="2" Margin="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ListBox x:Name="SettingsNav" Grid.Column="0" SelectedIndex="0"
+                     ItemContainerStyle="{StaticResource SettingsNavItemStyle}"
+                     Margin="0,0,8,0" Background="Transparent" BorderThickness="0">
+                <ListBoxItem ToolTip="API">
+                    <Grid>
+                        <Path Style="{StaticResource SettingsNavIconOutlineStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.NetworkOutline}, Converter={StaticResource MaterialIconToGeometry}}" />
+                        <Path Style="{StaticResource SettingsNavIconFilledStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.Network}, Converter={StaticResource MaterialIconToGeometry}}" />
+                    </Grid>
+                </ListBoxItem>
+                <ListBoxItem ToolTip="Native tools">
+                    <Grid>
+                        <Path Style="{StaticResource SettingsNavIconOutlineStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.WrenchOutline}, Converter={StaticResource MaterialIconToGeometry}}" />
+                        <Path Style="{StaticResource SettingsNavIconFilledStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.Wrench}, Converter={StaticResource MaterialIconToGeometry}}" />
+                    </Grid>
+                </ListBoxItem>
+                <ListBoxItem ToolTip="General">
+                    <Grid>
+                        <Path Style="{StaticResource SettingsNavIconOutlineStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.CogOutline}, Converter={StaticResource MaterialIconToGeometry}}" />
+                        <Path Style="{StaticResource SettingsNavIconFilledStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.Cog}, Converter={StaticResource MaterialIconToGeometry}}" />
+                    </Grid>
+                </ListBoxItem>
+                <ListBoxItem ToolTip="Sound">
+                    <Grid>
+                        <Path Style="{StaticResource SettingsNavIconOutlineStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.MicrophoneOutline}, Converter={StaticResource MaterialIconToGeometry}}" />
+                        <Path Style="{StaticResource SettingsNavIconFilledStyle}" Data="{Binding Source={x:Static mi:MaterialIconKind.Microphone}, Converter={StaticResource MaterialIconToGeometry}}" />
+                    </Grid>
+                </ListBoxItem>
+            </ListBox>
+            <TabControl x:Name="SettingsSubTabs" Grid.Column="1"
+                        SelectedIndex="{Binding SelectedIndex, ElementName=SettingsNav}"
+                        Background="Transparent" BorderThickness="0">
+                <TabControl.Template>
+                    <ControlTemplate TargetType="TabControl">
+                        <ContentPresenter ContentSource="SelectedContent"/>
+                    </ControlTemplate>
+                </TabControl.Template>
+                        <TabItem>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <Grid Margin="8"
+                                      VerticalAlignment="Top">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="Base URL"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="0"
+                                             Grid.Column="1"
+                                             x:Name="BaseUrlBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.BaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="1"
+                                               Grid.Column="0"
+                                               Text="API key"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <PasswordBox Grid.Row="1"
+                                                 Grid.Column="1"
+                                                 x:Name="ApiKeyBox"
+                                                 x:FieldModifier="public"
+                                                 Margin="0,0,0,4" />
+
+                                    <TextBlock Grid.Row="2"
+                                               Grid.Column="0"
+                                               Text="Model"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="2"
+                                             Grid.Column="1"
+                                             x:Name="ModelBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.Model, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="3"
+                                               Grid.Column="0"
+                                               Text="Temperature"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <StackPanel Grid.Row="3"
+                                                Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                Margin="0,0,0,4">
+                                        <Slider x:Name="TemperatureSlider"
+                                                Width="200"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                TickFrequency="0.1"
+                                                IsSnapToTickEnabled="True"
+                                                SmallChange="0.1"
+                                                LargeChange="0.2"
+                                                Value="{Binding Settings.Temperature, Mode=TwoWay}"
+                                                VerticalAlignment="Center" />
+                                        <TextBlock x:Name="TemperatureValueText"
+                                                   Text="{Binding Settings.TemperatureText}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="10,0,0,0"
+                                                   Width="40"
+                                                   Foreground="{StaticResource Dark.Text}" />
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Row="4"
+                                               Grid.Column="0"
+                                               Text="Context window (tokens)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="4"
+                                             Grid.Column="1"
+                                             x:Name="ContextWindowBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.ContextWindowSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="5"
+                                               Grid.Column="0"
+                                               Text="Compact threshold (0..1)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="5"
+                                             Grid.Column="1"
+                                             x:Name="CompactThresholdBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.CompactThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="6"
+                                               Grid.Column="0"
+                                               Text="Reserve fraction (0..1)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="6"
+                                             Grid.Column="1"
+                                             x:Name="ReserveFractionBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.ReserveFraction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="7"
+                                               Grid.Column="0"
+                                               Text="Keep recent messages"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="7"
+                                             Grid.Column="1"
+                                             x:Name="KeepRecentBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.KeepRecentMessages, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="8"
+                                               Grid.Column="0"
+                                               Text="Tool result max chars"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="8"
+                                             Grid.Column="1"
+                                             x:Name="ToolResultMaxCharsBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.ToolResultMaxChars, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="9"
+                                               Grid.Column="0"
+                                               Text="Max agent iterations"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="9"
+                                             Grid.Column="1"
+                                             x:Name="MaxIterationsBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.MaxIterations, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <CheckBox Grid.Row="10"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="AutoCompactCheckBox"
+                                              IsChecked="{Binding Settings.AutoCompact, Mode=TwoWay}"
+                                              Content="Auto-compact (summarize)"
+                                              Margin="0,2,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+
+                                    <CheckBox Grid.Row="11"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="UseToolRoleCheckBox"
+                                              IsChecked="{Binding Settings.UseToolRole, Mode=TwoWay}"
+                                              Content="Use 'tool' role for tool results"
+                                              Margin="0,2,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+
+                                    <TextBlock Grid.Row="12"
+                                               Grid.Column="0"
+                                               Text="Tool calling"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <ComboBox Grid.Row="12"
+                                              Grid.Column="1"
+                                              x:Name="ToolCallingModeCombo"
+                                              SelectedIndex="{Binding Settings.ToolCallingModeIndex, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,0,4">
+                                        <ComboBoxItem Content="JSON over chat (compatible)" />
+                                        <ComboBoxItem Content="Native function calling" />
+                                    </ComboBox>
+
+                                    <TextBlock Grid.Row="13"
+                                               Grid.Column="0"
+                                               Text="Memory bank"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <ComboBox Grid.Row="13"
+                                              Grid.Column="1"
+                                              x:Name="MemoryBankModeCombo"
+                                              SelectedIndex="{Binding Settings.MemoryBankModeIndex, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,0,4">
+                                        <ComboBoxItem Content="Disabled" />
+                                        <ComboBoxItem Content="Tool (read_memory / update_memory)" />
+                                        <ComboBoxItem Content="Convention (read/update with file tools)" />
+                                    </ComboBox>
+
+                                    <TextBlock Grid.Row="14"
+                                               Grid.Column="0"
+                                               Text="Request timeout (s)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="14"
+                                             Grid.Column="1"
+                                             x:Name="TimeoutSecondsBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.TimeoutSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="15"
+                                               Grid.Column="0"
+                                               Text="Retry budget (min)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="15"
+                                             Grid.Column="1"
+                                             x:Name="RetryTimeoutMinutesBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.RetryTimeoutMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="16"
+                                               Grid.Column="0"
+                                               Text="Retry base delay (s)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="16"
+                                             Grid.Column="1"
+                                             x:Name="RetryBaseDelaySecondsBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.RetryBaseDelaySeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="17"
+                                               Grid.Column="0"
+                                               Text="Retry max delay (s)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="17"
+                                             Grid.Column="1"
+                                             x:Name="RetryMaxDelaySecondsBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.RetryMaxDelaySeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="18"
+                                               Grid.Column="0"
+                                               Text="Input price ($/1M tokens)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="18"
+                                             Grid.Column="1"
+                                             x:Name="InputPriceBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.InputPricePerMillion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="19"
+                                               Grid.Column="0"
+                                               Text="Cache-hit price ($/1M tokens)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="19"
+                                             Grid.Column="1"
+                                             x:Name="CacheHitPriceBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.CacheHitPricePerMillion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="20"
+                                               Grid.Column="0"
+                                               Text="Output price ($/1M tokens)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="20"
+                                             Grid.Column="1"
+                                             x:Name="OutputPriceBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.OutputPricePerMillion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <CheckBox Grid.Row="21"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="AllowSubagentsCheckBox"
+                                              IsChecked="{Binding Settings.AllowSubagents, Mode=TwoWay}"
+                                              Content="Enable sub-agents (spawn_agent)"
+                                              Margin="0,2,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+
+                                    <TextBlock Grid.Row="22"
+                                               Grid.Column="0"
+                                               Text="Sub-agent max iterations"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="22"
+                                             Grid.Column="1"
+                                             x:Name="SubagentMaxIterationsBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.SubagentMaxIterations, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="23"
+                                               Grid.Column="0"
+                                               Text="Sub-agent max depth"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="23"
+                                             Grid.Column="1"
+                                             x:Name="SubagentMaxDepthBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.SubagentMaxDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <CheckBox Grid.Row="24"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="CheckpointsEnabledCheckBox"
+                                              IsChecked="{Binding Settings.CheckpointsEnabled, Mode=TwoWay}"
+                                              Content="Enable checkpoints (auto-snapshot by iteration diffs)"
+                                              Margin="0,2,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+
+                                    <TextBlock Grid.Row="25"
+                                               Grid.Column="0"
+                                               Text="Reasoning effort"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <ComboBox Grid.Row="25"
+                                              Grid.Column="1"
+                                              x:Name="ReasoningEffortCombo"
+                                              SelectedIndex="{Binding Settings.ReasoningEffortIndex, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,0,4">
+                                        <ComboBoxItem Content="Default" />
+                                        <ComboBoxItem Content="None" />
+                                        <ComboBoxItem Content="Minimal" />
+                                        <ComboBoxItem Content="Low" />
+                                        <ComboBoxItem Content="Medium" />
+                                        <ComboBoxItem Content="High" />
+                                        <ComboBoxItem Content="Extra high" />
+                                        <ComboBoxItem Content="Max" />
+                                    </ComboBox>
+
+                                    <TextBlock Grid.Row="26"
+                                               Grid.Column="0"
+                                               Text="Max stagnant repeats"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="26"
+                                             Grid.Column="1"
+                                             x:Name="MaxStagnantRepeatsBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.MaxStagnantRepeats, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <CheckBox Grid.Row="27"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="StagnantLoopNudgeCheckBox"
+                                              IsChecked="{Binding Settings.StagnantLoopNudge, Mode=TwoWay}"
+                                              Content="Nudge the model once before stopping a stagnant loop"
+                                              Margin="0,2,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+
+                                    <TextBlock Grid.Row="28"
+                                               Grid.Column="0"
+                                               Text="MCP servers (JSON)"
+                                               VerticalAlignment="Top"
+                                               Margin="0,4,8,4" />
+                                    <StackPanel Grid.Row="28"
+                                                Grid.Column="1"
+                                                Margin="0,4,0,4">
+                                        <TextBox x:Name="McpServersBox"
+                                                 MinHeight="96"
+                                                 AcceptsReturn="True"
+                                                 TextWrapping="Wrap"
+                                                 VerticalScrollBarVisibility="Auto"
+                                                 HorizontalScrollBarVisibility="Disabled"
+                                                 ToolTip="Paste an mcpServers JSON block, e.g. { &quot;mcpServers&quot;: { &quot;playwright&quot;: { &quot;command&quot;: &quot;npx&quot;, &quot;args&quot;: [&quot;@playwright/mcp@latest&quot;] } } }. Requires the MCP permission in Permissions."
+                                                 Text="{Binding Settings.McpServersJson, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        <Button x:Name="BrowseMcpRegistryButton"
+                                                Content="Browse MCP Registry"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,6,0,0"
+                                                Click="OnBrowseMcpRegistry"
+                                                ToolTip="Open the official MCP server registry in your browser." />
+                                    </StackPanel>
+
+                                    <CheckBox Grid.Row="29"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="NoRetryOn4xxCheckBox"
+                                              IsChecked="{Binding Settings.NoRetryOn4xx, Mode=TwoWay}"
+                                              Content="Do not retry 4xx errors (400/401/403/404/422)"
+                                              Margin="0,8,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+
+                                </Grid>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <Grid Margin="8"
+                                      VerticalAlignment="Top">
+                                    <ItemsControl ItemsSource="{Binding Settings.NativeToolGroups}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,0,0,8">
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontWeight="Bold"
+                                                               Margin="0,0,0,2"
+                                                               Foreground="{StaticResource Dark.Text}" />
+                                                    <ItemsControl ItemsSource="{Binding Items}"
+                                                                  Margin="12,0,0,0">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                                                          Margin="0,1,0,1"
+                                                                          VerticalAlignment="Center"
+                                                                          Foreground="{StaticResource Dark.Text}">
+                                                                    <TextBlock TextWrapping="Wrap"
+                                                                               MaxWidth="600">
+                                                            <Run Text="{Binding Name, Mode=OneWay}"
+                                                                        FontFamily="Consolas" />
+                                                            <Run Text=" вЂ” " />
+                                                            <Run Text="{Binding Description, Mode=OneWay}" />
+                                                                    </TextBlock>
+                                                                </CheckBox>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <Grid Margin="8"
+                                      VerticalAlignment="Top">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="Log file path"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <DockPanel Grid.Row="0"
+                                               Grid.Column="1"
+                                               Margin="0,0,0,4">
+                                        <Button DockPanel.Dock="Right"
+                                                x:Name="OpenLogButton"
+                                                Content="Open log"
+                                                Command="{Binding Cmd}"
+                                                CommandParameter="OpenLogCommand"
+                                                Margin="8,0,0,0" />
+                                        <TextBox x:Name="LogFilePathBox"
+                                                 Text="{Binding Settings.LogFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DockPanel>
+
+                                    <TextBlock Grid.Row="1"
+                                               Grid.Column="0"
+                                               Text="Chat log file path"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <DockPanel Grid.Row="1"
+                                               Grid.Column="1"
+                                               Margin="0,0,0,4">
+                                        <Button DockPanel.Dock="Right"
+                                                x:Name="OpenChatLogButton"
+                                                Content="Open log"
+                                                Command="{Binding Cmd}"
+                                                CommandParameter="OpenChatLogCommand"
+                                                Margin="8,0,0,0" />
+                                        <TextBox x:Name="ChatLogFilePathBox"
+                                                 Text="{Binding Settings.ChatLogFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DockPanel>
+
+                                    <TextBlock Grid.Row="2"
+                                               Grid.Column="0"
+                                               Text="User name"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="2"
+                                             Grid.Column="1"
+                                             x:Name="UserNameBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <CheckBox Grid.Row="3"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="AddressByNameCheckBox"
+                                              IsChecked="{Binding Settings.AddressByName, Mode=TwoWay}"
+                                              Content="Address me by name"
+                                              Margin="0,2,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+
+                                    <CheckBox Grid.Row="4"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="ShowControlsCheckBox"
+                                              IsChecked="{Binding Settings.ShowControls, Mode=TwoWay}"
+                                              Content="Show controls"
+                                              Margin="0,8,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+
+                                    <TextBlock Grid.Row="5"
+                                               Grid.Column="0"
+                                               Grid.ColumnSpan="2"
+                                               Text="Agent read scope (Plan mode)"
+                                               VerticalAlignment="Center"
+                                               Margin="0,8,0,2"
+                                               Foreground="{StaticResource Dark.Text}" />
+                                    <DockPanel Grid.Row="6"
+                                               Grid.Column="0"
+                                               Grid.ColumnSpan="2"
+                                               Margin="0,0,0,8">
+                                        <StackPanel DockPanel.Dock="Right"
+                                                    Orientation="Vertical"
+                                                    Margin="8,0,0,0">
+                                            <Button Content="Add folderвЂ¦"
+                                                    Command="{Binding Cmd}"
+                                                    CommandParameter="AddReadPathCommand"
+                                                    Margin="0,0,0,4" />
+                                            <Button Content="Remove selected"
+                                                    Command="{Binding Cmd}"
+                                                    CommandParameter="RemoveReadPathCommand" />
+                                        </StackPanel>
+                                        <ListBox x:Name="AdditionalReadPathsList"
+                                                 ItemsSource="{Binding Settings.AdditionalReadPaths}"
+                                                 SelectedItem="{Binding Settings.SelectedReadPath, Mode=TwoWay}"
+                                                 Height="80"
+                                                 Background="{StaticResource Dark.Panel}"
+                                                 Foreground="{StaticResource Dark.Text}"
+                                                 BorderBrush="{StaticResource Dark.Border}"
+                                                 BorderThickness="1"
+                                                 Padding="2"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Foreground"
+                                                            Value="{StaticResource Dark.Text}" />
+                                                    <Setter Property="Background"
+                                                            Value="Transparent" />
+                                                    <Setter Property="Padding"
+                                                            Value="4,3" />
+                                                    <Setter Property="HorizontalContentAlignment"
+                                                            Value="Stretch" />
+                                                    <Setter Property="SnapsToDevicePixels"
+                                                            Value="True" />
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="ListBoxItem">
+                                                                <Border x:Name="Bd"
+                                                                        Background="{TemplateBinding Background}"
+                                                                        Padding="{TemplateBinding Padding}"
+                                                                        SnapsToDevicePixels="True">
+                                                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver"
+                                                                             Value="True">
+                                                                        <Setter TargetName="Bd"
+                                                                                Property="Background"
+                                                                                Value="{StaticResource Dark.ControlHover}" />
+                                                                    </Trigger>
+                                                                    <Trigger Property="IsSelected"
+                                                                             Value="True">
+                                                                        <Setter TargetName="Bd"
+                                                                                Property="Background"
+                                                                                Value="{StaticResource Dark.Accent}" />
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                        </ListBox>
+                                    </DockPanel>
+
+                                    <StackPanel Grid.Row="7"
+                                                Grid.Column="0"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,8,0,0">
+                                        <CheckBox x:Name="DenyServiceDirectoriesCheckBox"
+                                                  IsChecked="{Binding Settings.DenyServiceDirectories, Mode=TwoWay}"
+                                                  Content="Deny service/build directories"
+                                                  Foreground="{StaticResource Dark.Text}" />
+                                        <TextBlock Text="Blocks the agent from reading files inside: bin, obj, .git, .vs, node_modules, packages, TestResults, .idea, .vscode, __pycache__."
+                                                   FontSize="11"
+                                                   Foreground="#C8C8C8"
+                                                   TextWrapping="Wrap"
+                                                   Margin="20,2,0,0" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Row="8"
+                                                Grid.Column="0"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,8,0,0">
+                                        <CheckBox x:Name="DenySensitiveFilesCheckBox"
+                                                  IsChecked="{Binding Settings.DenySensitiveFiles, Mode=TwoWay}"
+                                                  Content="Deny sensitive/secret files"
+                                                  Foreground="{StaticResource Dark.Text}" />
+                                        <TextBlock Text="Blocks the agent from reading: .env, web.config, SSH keys (id_rsa, id_dsa, id_ecdsa, id_ed25519), keys and certificates (*.pem, *.key, *.pfx, *.p12, *.snk, *.rdp, *.user, *.secret), appsettings*.json, and any file whose name contains &quot;credential&quot;."
+                                                   FontSize="11"
+                                                   Foreground="#C8C8C8"
+                                                   TextWrapping="Wrap"
+                                                   Margin="20,2,0,0" />
+                                    </StackPanel>
+
+                                    <Button Grid.Row="9"
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="2"
+                                            Content="Refresh prompts from disk"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,12,0,0"
+                                            Command="{Binding Cmd}"
+                                            CommandParameter="RefreshPromptsFromDiskCommand" />
+
+                                    <Button Grid.Row="10"
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="2"
+                                            Content="Export documentation"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,12,0,0"
+                                            Command="{Binding Cmd}"
+                                            CommandParameter="ExportDocumentationCommand" />
+
+                                    <Button Grid.Row="11"
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="2"
+                                            Content="Export prompts"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,12,0,0"
+                                            Command="{Binding Cmd}"
+                                            CommandParameter="ExportPromptsCommand" />
+
+                                    <TextBlock Grid.Row="12"
+                                               Grid.Column="0"
+                                               Text="Skills directory"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="12"
+                                             Grid.Column="1"
+                                             x:Name="SkillsPathBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.SkillsPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                </Grid>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <Grid Margin="8"
+                                      VerticalAlignment="Top">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="Speech recognition"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <ComboBox Grid.Row="0"
+                                              Grid.Column="1"
+                                              x:Name="SpeechToTextProviderCombo"
+                                              SelectedIndex="{Binding Settings.SpeechToTextProviderIndex, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,0,4">
+                                        <ComboBoxItem Content="Auto (Whisper, fallback Vosk)" />
+                                        <ComboBoxItem Content="OpenAI Whisper" />
+                                        <ComboBoxItem Content="Vosk (offline)" />
+                                    </ComboBox>
+
+                                    <TextBlock Grid.Row="1"
+                                               Grid.Column="0"
+                                               Text="Whisper STT model"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="1"
+                                             Grid.Column="1"
+                                             x:Name="SpeechToTextModelBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.SpeechToTextModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="2"
+                                               Grid.Column="0"
+                                               Text="Speech language"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="2"
+                                             Grid.Column="1"
+                                             x:Name="SpeechToTextLanguageBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.SpeechToTextLanguage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="3"
+                                               Grid.Column="0"
+                                               Text="Vosk model directory"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <TextBox Grid.Row="3"
+                                             Grid.Column="1"
+                                             x:Name="VoskModelPathBox"
+                                             Margin="0,0,0,4"
+                                             Text="{Binding Settings.VoskModelPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <CheckBox Grid.Row="4"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              x:Name="SpeechAutoSendCheckBox"
+                                              IsChecked="{Binding Settings.SpeechAutoSend, Mode=TwoWay}"
+                                              Content="Auto-send voice input"
+                                              Margin="0,2,0,4"
+                                              Foreground="{StaticResource Dark.Text}" />
+                                </Grid>
+                            </ScrollViewer>
+                        </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
+</UserControl>

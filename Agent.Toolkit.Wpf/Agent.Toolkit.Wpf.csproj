@@ -29,8 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Agent.Core\Agent.Core.csproj" />
-    <ProjectReference Include="..\Agent.Models\Agent.Models.csproj" />
-    <ProjectReference Include="..\Agent.Mvvm\Agent.Mvvm.csproj" />
   </ItemGroup>
 
   <ItemGroup>
