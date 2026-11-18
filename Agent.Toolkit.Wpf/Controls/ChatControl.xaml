@@ -24,30 +24,30 @@
                 <StackPanel x:Name="ChatToolbarPanel" Grid.Row="0" Margin="0,0,0,0">
                     <ContentControl x:Name="VoiceErrorToastSlot" Margin="0,0,0,6" Visibility="Collapsed"/>
                     <WrapPanel Margin="0,5,0,5">
-                        <Button Width="32" Height="32" Margin="0,0,4,4" Click="OnNewChat"
+                        <Button Width="26" Height="26" Margin="0,0,4,4" Click="OnNewChat"
                                 Style="{StaticResource ChatInputActionButtonStyle}" ToolTip="New chat">
                             <Path Data="{Binding Source={x:Static mi:MaterialIconKind.Plus}, Converter={StaticResource MaterialIconToGeometry}}"
-                                  Fill="{DynamicResource Theme.Text}" Width="18" Height="18" Stretch="Uniform"/>
+                                  Fill="{DynamicResource Theme.Text}" Width="15" Height="15" Stretch="Uniform"/>
                         </Button>
-                        <Button Width="32" Height="32" Margin="0,0,4,4" Click="OnShowHistory"
+                        <Button Width="26" Height="26" Margin="0,0,4,4" Click="OnShowHistory"
                                 Style="{StaticResource ChatInputActionButtonStyle}" ToolTip="Browse saved chats (keeps the current chat active)">
                             <Path Data="{Binding Source={x:Static mi:MaterialIconKind.TimelineTextOutline}, Converter={StaticResource MaterialIconToGeometry}}"
-                                  Fill="{DynamicResource Theme.Text}" Width="18" Height="18" Stretch="Uniform"/>
+                                  Fill="{DynamicResource Theme.Text}" Width="15" Height="15" Stretch="Uniform"/>
                         </Button>
-                        <Button Width="32" Height="32" Margin="0,0,4,4" Click="OnCommit"
+                        <Button Width="26" Height="26" Margin="0,0,4,4" Click="OnCommit"
                                 Style="{StaticResource ChatInputActionButtonStyle}" ToolTip="Commit">
                             <Path Data="{Binding Source={x:Static mi:MaterialIconKind.SourceCommit}, Converter={StaticResource MaterialIconToGeometry}}"
-                                  Fill="{DynamicResource Theme.Text}" Width="18" Height="18" Stretch="Uniform"/>
+                                  Fill="{DynamicResource Theme.Text}" Width="15" Height="15" Stretch="Uniform"/>
                         </Button>
-                        <Button Width="32" Height="32" Margin="0,0,4,4" Click="OnSendErrors"
+                        <Button Width="26" Height="26" Margin="0,0,4,4" Click="OnSendErrors"
                                 Style="{StaticResource ChatInputActionButtonStyle}" ToolTip="Send errors to chat">
                             <Path Data="{Binding Source={x:Static mi:MaterialIconKind.AlertCircleOutline}, Converter={StaticResource MaterialIconToGeometry}}"
-                                  Fill="{DynamicResource Theme.Text}" Width="18" Height="18" Stretch="Uniform"/>
+                                  Fill="{DynamicResource Theme.Text}" Width="15" Height="15" Stretch="Uniform"/>
                         </Button>
-                        <Button Width="32" Height="32" Margin="0,0,4,4" Click="OnCopyConversation"
+                        <Button Width="26" Height="26" Margin="0,0,4,4" Click="OnCopyConversation"
                                 Style="{StaticResource ChatInputActionButtonStyle}" ToolTip="Copy all chat messages">
                             <Path Data="{Binding Source={x:Static mi:MaterialIconKind.ContentCopy}, Converter={StaticResource MaterialIconToGeometry}}"
-                                  Fill="{DynamicResource Theme.Text}" Width="18" Height="18" Stretch="Uniform"/>
+                                  Fill="{DynamicResource Theme.Text}" Width="15" Height="15" Stretch="Uniform"/>
                         </Button>
                     </WrapPanel>
                     <ContentControl x:Name="OptionsWarningToastSlot" Margin="0,0,0,6" Visibility="Collapsed"/>
@@ -249,7 +249,7 @@
                                      Background="Transparent" BorderThickness="0"
                                      VerticalScrollBarVisibility="Auto"
                                      PreviewKeyDown="OnInputKeyDown"/>
-                            <toolkit:TopOverflowWrapPanel Grid.Column="1" VerticalAlignment="Bottom" VerticalSpacing="4" ColumnSpacing="8">
+                            <toolkit:TopOverflowWrapPanel Grid.Column="1" VerticalAlignment="Bottom" VerticalSpacing="4" ColumnSpacing="8" MaxItemsPerColumn="2">
                                 <Button x:Name="ClearInputButton" Width="26" Height="26"
                                         Click="OnClearInput"
                                         Style="{StaticResource IconButtonStyle}"
@@ -302,8 +302,9 @@
                                 <toolkit:SegmentedToggleItem Label="Help" Value="Help" Accent="{DynamicResource Theme.ModeHelp}"/>
                             </toolkit:SegmentedToggle.Items>
                         </toolkit:SegmentedToggle>
-                        <Button x:Name="CompactNowButton" Click="OnCompactNow" Height="24"
-                                Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center"
+                        <Button x:Name="CompactNowButton" Click="OnCompactNow" Width="24" Height="24"
+                                Margin="10,0,0,0" VerticalAlignment="Center"
+                                Style="{StaticResource IconButtonStyle}"
                                 ToolTip="Summarize the conversation to free context space">
                             <Button.IsEnabled>
                                 <MultiBinding Converter="{StaticResource AllTrue}">
@@ -311,22 +312,36 @@
                                     <Binding Path="Chat.Phase" Converter="{StaticResource PhaseNotStreaming}"/>
                                 </MultiBinding>
                             </Button.IsEnabled>
-                            <StackPanel Orientation="Horizontal">
-                                <Ellipse x:Name="CompactIndicator" Width="7" Height="7"
-                                          Fill="Red" VerticalAlignment="Center" Margin="0,0,5,0"
-                                          Visibility="Collapsed"/>
-                                <TextBlock Text="Compact now" VerticalAlignment="Center"/>
-                            </StackPanel>
+                            <Grid>
+                                <Path Data="{Binding Source={x:Static mi:MaterialIconKind.Compress}, Converter={StaticResource MaterialIconToGeometry}}"
+                                      Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Ellipse x:Name="CompactIndicator" Width="6" Height="6"
+                                          Fill="Red" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                          Margin="0,2,2,0" Visibility="Collapsed"/>
+                            </Grid>
                         </Button>
-                        <Button x:Name="UpdateMemoryButton" Content="Memory bank" Click="OnUpdateMemory" Height="24"
-                                Padding="8,2" Margin="6,0,0,0" VerticalAlignment="Center"
-                                ToolTip="Ask the agent to update the project memory bank"/>
-                        <Button x:Name="PermissionsButton" Content="Permissions" Click="OnPermissionsClick" Height="24"
-                                Padding="8,2" Margin="6,0,0,0" VerticalAlignment="Center"
-                                ToolTip="Configure agent permissions (read files, edit files, execute commands, web fetch, MCP)"/>
-                        <Button x:Name="DocsButton" Content="Docs" Click="OnDocsClick" Height="24"
-                                Padding="8,2" Margin="6,0,0,0" VerticalAlignment="Center"
-                                ToolTip="Open the documentation"/>
+                        <Button x:Name="UpdateMemoryButton" Click="OnUpdateMemory" Width="24" Height="24"
+                                Margin="6,0,0,0" VerticalAlignment="Center"
+                                Style="{StaticResource IconButtonStyle}"
+                                ToolTip="Ask the agent to update the project memory bank">
+                            <Path Data="{Binding Source={x:Static mi:MaterialIconKind.Database}, Converter={StaticResource MaterialIconToGeometry}}"
+                                  Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"/>
+                        </Button>
+                        <Button x:Name="PermissionsButton" Click="OnPermissionsClick" Width="24" Height="24"
+                                Margin="6,0,0,0" VerticalAlignment="Center"
+                                Style="{StaticResource IconButtonStyle}"
+                                ToolTip="Configure agent permissions (read files, edit files, execute commands, web fetch, MCP)">
+                            <Path Data="{Binding Source={x:Static mi:MaterialIconKind.ShieldKey}, Converter={StaticResource MaterialIconToGeometry}}"
+                                  Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"/>
+                        </Button>
+                        <Button x:Name="DocsButton" Click="OnDocsClick" Width="24" Height="24"
+                                Margin="6,0,0,0" VerticalAlignment="Center"
+                                Style="{StaticResource IconButtonStyle}"
+                                ToolTip="Open the documentation">
+                            <Path Data="{Binding Source={x:Static mi:MaterialIconKind.BookOpenOutline}, Converter={StaticResource MaterialIconToGeometry}}"
+                                  Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"/>
+                        </Button>
                         <Button x:Name="DoItButton" Content="Do it!!!" Height="24"
                                 Click="OnDoItClick"
                                 Padding="8,2" Margin="6,0,0,0" VerticalAlignment="Center"

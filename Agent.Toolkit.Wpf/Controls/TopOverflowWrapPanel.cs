@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using Agent.Core.Layout;
 
 namespace Agent.Toolkit.Wpf.Controls
 {
@@ -48,6 +49,34 @@ namespace Agent.Toolkit.Wpf.Controls
             set => SetValue(ColumnSpacingProperty, value);
         }
 
+        public static readonly DependencyProperty MaxItemsPerColumnProperty =
+            DependencyProperty.Register(
+                nameof(MaxItemsPerColumn),
+                typeof(int),
+                typeof(TopOverflowWrapPanel),
+                new FrameworkPropertyMetadata(
+                    0,
+                    FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsArrange,
+                    null,
+                    CoerceMaxItemsPerColumn));
+
+        /// <summary>
+        /// Gets or sets the maximum number of children that may share a single column.
+        /// Zero or less means no limit. When a column reaches the limit, the next child
+        /// starts a new column to the right, so the buttons wrap in fixed-size groups.
+        /// </summary>
+        public int MaxItemsPerColumn
+        {
+            get => (int)GetValue(MaxItemsPerColumnProperty);
+            set => SetValue(MaxItemsPerColumnProperty, value);
+        }
+
+        private static object CoerceMaxItemsPerColumn(DependencyObject d, object baseValue)
+        {
+            int value = baseValue is int boxed ? boxed : 0;
+            return value > 0 ? value : 0;
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (Children.Count == 0)
@@ -92,29 +121,11 @@ namespace Agent.Toolkit.Wpf.Controls
 
         private List<List<int>> BuildColumns(double availableHeight)
         {
-            var columns = new List<List<int>>();
-            var current = new List<int>();
-            columns.Add(current);
+            var heights = new double[Children.Count];
+            for (int i = 0; i < Children.Count; i++)
+                heights[i] = Children[i].DesiredSize.Height;
 
-            double usedHeight = 0;
-            for (int i = Children.Count - 1; i >= 0; i--)
-            {
-                double height = Children[i].DesiredSize.Height;
-                double additional = current.Count == 0 ? height : VerticalSpacing + height;
-
-                if (current.Count > 0 && usedHeight + additional > availableHeight)
-                {
-                    current = new List<int>();
-                    columns.Add(current);
-                    usedHeight = 0;
-                    additional = height;
-                }
-
-                current.Add(i);
-                usedHeight += additional;
-            }
-
-            return columns;
+            return ColumnPacker.Pack(heights, VerticalSpacing, availableHeight, MaxItemsPerColumn);
         }
 
         private Size ComputeDesiredSize(List<List<int>> columns)
