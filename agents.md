@@ -116,15 +116,36 @@ CI `.github/workflows/build.yml` собирает те же пакеты и пу
 - Контролы ссылаются на цвета через `{DynamicResource Theme.*}` (не `StaticResource`).
 - Настройка: `SettingsModel.ThemeIndex` (0 = Dark, 1 = Light) и секция «Theme» в `SettingsControl`.
 
-### Точка входа для хоста
+### Хост-контракт: два режима владения темой
 
-Хост должен применить сохранённую тему при старте:
+У `AgentThemeManager` есть перечисление `AgentThemeMode` и метод `SetMode`, который выбирает,
+кто владеет темой тулкита:
+
+- **`Manual` (дефолт)** — темой владеет только тулкит: переключение идёт через ComboBox «Theme»
+  в `SettingsControl` (`SettingsModel.BaseTheme` + `ApplyFromSettings`). Вызовы
+  `AgentThemeManager.Apply(...)` от хоста игнорируются.
+- **`Auto`** — темой владеет хост: он применяет свою настройку через `AgentThemeManager.Apply(...)`,
+  а `SettingsControl` только отражает текущую тему и не перебивает её при `DataContextChanged`.
+
+Хост, который сам управляет темой, при старте выбирает `Auto` и применяет сохранённую тему:
 
 ```csharp
-AgentThemeManager.Apply(SettingsStore.Load().BaseTheme);
+using Agent.Models;               // AgentThemeMode
+using Agent.Toolkit.Wpf.Theming;  // AgentThemeManager
+
+AgentThemeManager.SetMode(AgentThemeMode.Auto);
+AgentThemeManager.Apply(SettingsStore.Load().BaseTheme); // "Dark" | "Light"
+
+// переключение в обработчике тумблера темы хоста (действует только в режиме Auto):
+AgentThemeManager.Apply(light ? "Light" : "Dark");
 ```
 
-Без этого по умолчанию будет тёмная (`EnsureInitialized` в `ChatControl`/`SettingsControl` страхует).
+В режиме `Manual` хост **не** вызывает `Apply` — темой владеет только ComboBox «Theme» в
+`SettingsControl`. Без явного `SetMode` по умолчанию действует `Manual` (совместимо с автономным
+запуском тулкита); тёмную тему при этом страхует `EnsureInitialized` в `ChatControl`/`AgentTabControl`.
+
+Логика режимов и детект смены вынесены в UI-свободный `Agent.Models.ThemeModeState` (netstandard2.0),
+поэтому контракт покрыт юнит-тестами без WPF `Application`.
 
 ### Добавить новую тему
 

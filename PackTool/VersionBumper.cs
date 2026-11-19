@@ -48,5 +48,22 @@ namespace PackTool
 
             return $"{numbers[0]}.{numbers[1]}.{numbers[2]}.{numbers[3]}";
         }
+
+        /// <summary>
+        /// Computes the next feed version from the versions already present in the feed
+        /// plus the version declared in Directory.Build.props. The declared version acts
+        /// as a floor: a fresh/empty feed or a stale feed can never produce a package
+        /// below the version the repository currently declares.
+        /// </summary>
+        public static string ComputeNextFromFeed(IEnumerable<string> feedVersions, string declaredVersion)
+        {
+            var candidates = new List<string>(feedVersions ?? Array.Empty<string>());
+            if (!string.IsNullOrWhiteSpace(declaredVersion))
+            {
+                candidates.Add(declaredVersion);
+            }
+
+            return ComputeNext(FindMaxVersion(candidates));
+        }
     }
 }

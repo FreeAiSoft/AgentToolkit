@@ -1,4 +1,20 @@
 <Solution>
+  <Project Path="../../../Desktop/AI-RPA/AiRpaStudio.Tests/AiRpaStudio.Tests.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/AiRpaStudio/AiRpaStudio.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/AvalonDock.Themes.Metro/AvalonDock.Themes.Metro.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/AvalonDock/AvalonDock.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/AvalonEdit/ICSharpCode.AvalonEdit/ICSharpCode.AvalonEdit.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/LogControlLibrary/LogControlLibrary.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/RPA.Chat/RPA.Chat.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/RPA.NuGet/RPA.NuGet.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/Rpa.Orchestrator.Contracts/Rpa.Orchestrator.Contracts.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/Rpa.RobotPackaging/Rpa.RobotPackaging.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/RPA.Shared/RPA.Shared.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/Rpa.Styles/Rpa.Styles.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/Rpa.Workflow.Runtime/Rpa.Workflow.Runtime.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/RpaCommon/RpaCommon.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/RpaPack/RpaPack.csproj" />
+  <Project Path="../../../Desktop/AI-RPA/RpaRunner/RpaRunner.csproj" />
   <Project Path="../RPAWriter2/Agent.Rpa/Agent.Rpa.csproj" />
   <Project Path="../RPAWriter2/RPAWriter.Roslyn/RPAWriter.Roslyn.csproj" />
   <Project Path="../RPAWriter2/RPAWriter2/RPAWriter2.csproj" />

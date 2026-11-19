@@ -30,15 +30,20 @@ namespace Agent.Toolkit.Wpf.Controls
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            AgentThemeManager.Apply(GetBaseTheme());
+            // In Auto mode the host owns the theme and must not be overridden here.
+            if (AgentThemeManager.Mode != AgentThemeMode.Manual)
+                return;
+
+            AgentThemeManager.ApplyFromSettings(GetBaseTheme());
         }
 
         private void OnThemeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ThemeCombo.SelectedIndex == 1)
-                AgentThemeManager.ApplyLight();
-            else
-                AgentThemeManager.ApplyDark();
+            // The combo only drives the theme in Manual mode (the toolkit owns it).
+            if (AgentThemeManager.Mode != AgentThemeMode.Manual)
+                return;
+
+            AgentThemeManager.ApplyFromSettings(ThemeCombo.SelectedIndex == 1);
         }
 
         private string GetBaseTheme()

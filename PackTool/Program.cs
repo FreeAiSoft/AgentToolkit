@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace PackTool
@@ -16,6 +17,9 @@ namespace PackTool
         private static readonly Regex VersionSuffix =
             new Regex(@"\.(?<version>\d+(?:\.\d+)+)$", RegexOptions.Compiled);
 
+        private static readonly Regex DeclaredVersion =
+            new Regex(@"<Version\s*>\s*(?<version>[^<\s]+)\s*</Version\s*>", RegexOptions.Compiled);
+
         public static int Main(string[] args)
         {
             try
@@ -24,10 +28,15 @@ namespace PackTool
                 var feed = Path.Combine(root, "feed");
                 Directory.CreateDirectory(feed);
 
-                var max = VersionBumper.FindMaxVersion(ReadFeedVersions(feed));
-                var next = VersionBumper.ComputeNext(max);
+                // The version declared in Directory.Build.props acts as the floor: a fresh
+                // or stale feed must never produce a package below the declared version.
+                var declared = ReadDeclaredVersion(root);
+                var feedVersions = ReadFeedVersions(feed).ToList();
+                var feedMax = VersionBumper.FindMaxVersion(feedVersions);
+                var next = VersionBumper.ComputeNextFromFeed(feedVersions, declared);
 
-                Console.WriteLine($"Feed max version: {max ?? "(none)"}");
+                Console.WriteLine($"Declared version: {declared ?? "(none)"}");
+                Console.WriteLine($"Feed max version: {feedMax ?? "(none)"}");
                 Console.WriteLine($"Packing version:  {next}");
 
                 string[] projects =
@@ -47,8 +56,7 @@ namespace PackTool
                         "-p:AgentSkipReleasePack=true", "--nologo");
                 }
 
-                Pack(root, feed, "AgentToolkit", next);
-                Pack(root, feed, "AgentToolkit.Wpf", next);
+                PublishPackages(root, feed, next);
 
                 Console.WriteLine($"Packages published to {feed}");
                 return 0;
@@ -60,12 +68,75 @@ namespace PackTool
             }
         }
 
-        private static void Pack(string root, string feed, string package, string version)
+        /// <summary>
+        /// Reads the canonical package version from Directory.Build.props. Returns null
+        /// when the file or the version element is missing.
+        /// </summary>
+        private static string ReadDeclaredVersion(string root)
+        {
+            var props = Path.Combine(root, "Directory.Build.props");
+            if (!File.Exists(props))
+            {
+                return null;
+            }
+
+            var match = DeclaredVersion.Match(File.ReadAllText(props));
+            return match.Success ? match.Groups["version"].Value : null;
+        }
+
+        /// <summary>
+        /// Packs both toolkit packages into a staging folder and only moves them into the
+        /// feed after both are produced with the requested version. This keeps the feed
+        /// consistent: either both packages appear with the same version, or neither does.
+        /// </summary>
+        private static void PublishPackages(string root, string feed, string version)
+        {
+            var staging = Path.Combine(feed, ".staging");
+            if (Directory.Exists(staging))
+            {
+                Directory.Delete(staging, true);
+            }
+            Directory.CreateDirectory(staging);
+
+            try
+            {
+                Pack(root, staging, "AgentToolkit", version);
+                Pack(root, staging, "AgentToolkit.Wpf", version);
+
+                var expected = new[]
+                {
+                    Path.Combine(staging, $"AgentToolkit.{version}.nupkg"),
+                    Path.Combine(staging, $"AgentToolkit.Wpf.{version}.nupkg"),
+                };
+                foreach (var file in expected)
+                {
+                    if (!File.Exists(file))
+                    {
+                        throw new InvalidOperationException(
+                            $"Expected package was not produced: {Path.GetFileName(file)}");
+                    }
+                }
+
+                foreach (var file in Directory.GetFiles(staging, "*.nupkg"))
+                {
+                    File.Move(file, Path.Combine(feed, Path.GetFileName(file)), overwrite: true);
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(staging))
+                {
+                    Directory.Delete(staging, true);
+                }
+            }
+        }
+
+        private static void Pack(string root, string outputDirectory, string package, string version)
         {
             var csproj = Path.Combine(root, package, package + ".csproj");
             Console.WriteLine($"Packing {package} ...");
             Run(root, "dotnet", "pack", csproj, "-c", "Release",
-                "-p:PackageVersion=" + version, "-o", feed, "--nologo");
+                "-p:PackageVersion=" + version, "-o", outputDirectory, "--nologo");
         }
 
         private static IEnumerable<string> ReadFeedVersions(string feed)
@@ -107,9 +178,11 @@ namespace PackTool
 
             using (var process = Process.Start(psi))
             {
-                var stdout = process.StandardOutput.ReadToEnd();
-                var stderr = process.StandardError.ReadToEnd();
+                var stdoutTask = process.StandardOutput.ReadToEndAsync();
+                var stderrTask = process.StandardError.ReadToEndAsync();
                 process.WaitForExit();
+                var stdout = stdoutTask.GetAwaiter().GetResult();
+                var stderr = stderrTask.GetAwaiter().GetResult();
                 Console.Write(stdout);
                 if (!string.IsNullOrEmpty(stderr))
                 {

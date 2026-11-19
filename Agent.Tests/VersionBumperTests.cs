@@ -60,5 +60,33 @@ namespace Agent.Tests
         {
             Assert.That(VersionBumper.FindMaxVersion(new string[0]), Is.Null);
         }
+
+        [Test]
+        public void ComputeNextFromFeed_EmptyFeed_UsesDeclaredVersionAsFloor()
+        {
+            Assert.That(VersionBumper.ComputeNextFromFeed(new string[0], "1.17.0"),
+                Is.EqualTo("1.17.0.1"));
+        }
+
+        [Test]
+        public void ComputeNextFromFeed_StaleFeed_NeverRegressesBelowDeclaredVersion()
+        {
+            Assert.That(VersionBumper.ComputeNextFromFeed(new[] { "1.16.2.2" }, "1.17.0"),
+                Is.EqualTo("1.17.0.1"));
+        }
+
+        [Test]
+        public void ComputeNextFromFeed_FeedAheadOfDeclared_BumpsFeedMax()
+        {
+            Assert.That(VersionBumper.ComputeNextFromFeed(new[] { "1.17.0.1", "1.16.0" }, "1.17.0"),
+                Is.EqualTo("1.17.0.2"));
+        }
+
+        [Test]
+        public void ComputeNextFromFeed_NoDeclaredVersion_BumpsFeedMax()
+        {
+            Assert.That(VersionBumper.ComputeNextFromFeed(new[] { "1.16.2.2" }, null),
+                Is.EqualTo("1.16.2.3"));
+        }
     }
 }

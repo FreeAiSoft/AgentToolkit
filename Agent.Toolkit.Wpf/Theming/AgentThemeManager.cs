@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using Agent.Models;
 
 namespace Agent.Toolkit.Wpf.Theming
 {
@@ -12,19 +13,34 @@ namespace Agent.Toolkit.Wpf.Theming
     /// <see cref="Application.Current.Resources"/> here. Because the references are dynamic, writing
     /// new brush values re-colors the already-open UI without recreating windows or controls.
     /// </para>
-    /// <para>Hosts should call <see cref="Apply"/> once at startup with the persisted base theme
+    /// <para>Hosts that own the theme select <see cref="AgentThemeMode.Auto"/> via <see cref="SetMode"/>
+    /// and then call <see cref="Apply"/> once at startup with the persisted base theme
     /// (e.g. <c>SettingsStore.Load().BaseTheme</c>).</para>
     /// </summary>
     public static class AgentThemeManager
     {
         private static readonly object Gate = new object();
 
+        private static readonly ThemeModeState State = new ThemeModeState();
         private static ResourceDictionary _darkPalette;
         private static ResourceDictionary _lightPalette;
-        private static string _current = "Dark";
 
         /// <summary>Currently applied base theme: "Dark" or "Light".</summary>
-        public static string Current => _current;
+        public static string Current => State.Current;
+
+        /// <summary>Who owns the toolkit theme (see <see cref="AgentThemeMode"/>).</summary>
+        public static AgentThemeMode Mode => State.Mode;
+
+        /// <summary>
+        /// Selects who owns the toolkit theme.
+        /// <list type="bullet">
+        /// <item><see cref="AgentThemeMode.Manual"/>: only the SettingsControl "Theme" combo applies the
+        /// theme; host calls to <see cref="Apply(string)"/> are ignored.</item>
+        /// <item><see cref="AgentThemeMode.Auto"/>: the host owns the theme and applies it through
+        /// <see cref="Apply(string)"/>; SettingsControl only reflects it and never overrides it.</item>
+        /// </list>
+        /// </summary>
+        public static void SetMode(AgentThemeMode mode) => State.SetMode(mode);
 
         /// <summary>Raised after the palette has been swapped.</summary>
         public static event EventHandler ThemeChanged;
@@ -46,24 +62,51 @@ namespace Agent.Toolkit.Wpf.Theming
             }
         }
 
-        /// <summary>Applies a base theme by name: "Dark" or "Light".</summary>
+        /// <summary>
+        /// Host contract: applies a base theme by name ("Dark" / "Light", case-insensitive).
+        /// Honored only in <see cref="AgentThemeMode.Auto"/> mode; in Manual mode the call is ignored.
+        /// </summary>
         public static void Apply(string baseTheme)
         {
             Apply(string.Equals(baseTheme, "Light", StringComparison.OrdinalIgnoreCase));
         }
 
-        /// <summary>Applies the light theme when <paramref name="light"/> is true, otherwise the dark theme.</summary>
+        /// <summary>
+        /// Host contract: applies the light theme when <paramref name="light"/> is true, otherwise the dark theme.
+        /// Honored only in <see cref="AgentThemeMode.Auto"/> mode; in Manual mode the call is ignored.
+        /// </summary>
         public static void Apply(bool light)
         {
+            if (!State.AcceptsHostApply)
+                return;
+
             EnsurePalettes();
             WritePalette(light ? _lightPalette : _darkPalette, light ? "Light" : "Dark");
         }
 
-        /// <summary>Applies the dark theme.</summary>
+        /// <summary>Host contract: applies the dark theme (Auto mode only).</summary>
         public static void ApplyDark() => Apply(false);
 
-        /// <summary>Applies the light theme.</summary>
+        /// <summary>Host contract: applies the light theme (Auto mode only).</summary>
         public static void ApplyLight() => Apply(true);
+
+        /// <summary>
+        /// Toolkit contract: applies the theme owned by the SettingsControl "Theme" combo.
+        /// Honored only in <see cref="AgentThemeMode.Manual"/> mode; in Auto mode the call is ignored.
+        /// </summary>
+        internal static void ApplyFromSettings(string baseTheme)
+        {
+            ApplyFromSettings(string.Equals(baseTheme, "Light", StringComparison.OrdinalIgnoreCase));
+        }
+
+        internal static void ApplyFromSettings(bool light)
+        {
+            if (!State.AcceptsToolkitApply)
+                return;
+
+            EnsurePalettes();
+            WritePalette(light ? _lightPalette : _darkPalette, light ? "Light" : "Dark");
+        }
 
         private const string ThemeWindowKey = "Theme.Window";
 
@@ -90,7 +133,7 @@ namespace Agent.Toolkit.Wpf.Theming
             var app = Application.Current;
             if (app == null)
             {
-                _current = name;
+                State.Record(name);
                 return;
             }
 
@@ -100,10 +143,9 @@ namespace Agent.Toolkit.Wpf.Theming
                 resources[key] = palette[key];
             }
 
-            if (_current == name)
+            if (!State.TryChange(name))
                 return;
 
-            _current = name;
             ThemeChanged?.Invoke(null, EventArgs.Empty);
         }
     }
