@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Shapes;
+using Agent.Core.Providers;
 using Agent.Models;
 using Agent.Mvvm;
 using Agent.Toolkit.Wpf.Converters;
@@ -31,6 +32,7 @@ namespace Agent.Toolkit.Wpf.Controls
             InitializeComponent();
             ToastBanner.CloseRequested += OnToastClose;
             AgentThemeManager.EnsureInitialized();
+            ProviderCombo.ItemsSource = AiProviderCatalog.All;
             DataContextChanged += OnDataContextChanged;
         }
 

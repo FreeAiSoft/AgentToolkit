@@ -109,6 +109,9 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
 
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
@@ -116,43 +119,84 @@
 
                                     <TextBlock Grid.Row="0"
                                                Grid.Column="0"
+                                               Text="Provider"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <ComboBox Grid.Row="0"
+                                              Grid.Column="1"
+                                              x:Name="ProviderCombo"
+                                              DisplayMemberPath="DisplayName"
+                                              SelectedIndex="{Binding Settings.ProviderIndex, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,0,4" />
+
+                                    <TextBlock Grid.Row="1"
+                                               Grid.Column="0"
                                                Text="Base URL"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="0"
+                                    <TextBox Grid.Row="1"
                                              Grid.Column="1"
                                              x:Name="BaseUrlBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.BaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="1"
+                                    <TextBlock Grid.Row="2"
                                                Grid.Column="0"
                                                Text="API key"
                                                VerticalAlignment="Center"
-                                               Margin="0,0,8,4" />
-                                    <PasswordBox Grid.Row="1"
+                                               Margin="0,0,8,4"
+                                               Visibility="{Binding Settings.IsApiKeyVisible, Converter={StaticResource BoolToVis}}" />
+                                    <PasswordBox Grid.Row="2"
                                                  Grid.Column="1"
                                                  x:Name="ApiKeyBox"
                                                  x:FieldModifier="public"
-                                                 Margin="0,0,0,4" />
+                                                 Margin="0,0,0,4"
+                                                 Visibility="{Binding Settings.IsApiKeyVisible, Converter={StaticResource BoolToVis}}" />
 
-                                    <TextBlock Grid.Row="2"
+                                    <TextBlock Grid.Row="3"
                                                Grid.Column="0"
                                                Text="Model"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="2"
+                                    <TextBox Grid.Row="3"
                                              Grid.Column="1"
                                              x:Name="ModelBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.Model, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="3"
+                                    <TextBlock Grid.Row="4"
+                                               Grid.Column="0"
+                                               Text="Azure API version"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4"
+                                               Visibility="{Binding Settings.IsAzureVisible, Converter={StaticResource BoolToVis}}" />
+                                    <TextBox Grid.Row="4"
+                                             Grid.Column="1"
+                                             x:Name="AzureApiVersionBox"
+                                             Margin="0,0,0,4"
+                                             Visibility="{Binding Settings.IsAzureVisible, Converter={StaticResource BoolToVis}}"
+                                             Text="{Binding Settings.AzureApiVersion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="5"
+                                               Grid.Column="0"
+                                               Text="Azure deployment name"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4"
+                                               Visibility="{Binding Settings.IsAzureVisible, Converter={StaticResource BoolToVis}}" />
+                                    <TextBox Grid.Row="5"
+                                             Grid.Column="1"
+                                             x:Name="AzureDeploymentNameBox"
+                                             Margin="0,0,0,4"
+                                             Visibility="{Binding Settings.IsAzureVisible, Converter={StaticResource BoolToVis}}"
+                                             Text="{Binding Settings.AzureDeploymentName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Grid.Row="6"
                                                Grid.Column="0"
                                                Text="Temperature"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <StackPanel Grid.Row="3"
+                                    <StackPanel Grid.Row="6"
                                                 Grid.Column="1"
                                                 Orientation="Horizontal"
                                                 Margin="0,0,0,4">
@@ -174,73 +218,73 @@
                                                    Foreground="{DynamicResource Theme.Text}" />
                                     </StackPanel>
 
-                                    <TextBlock Grid.Row="4"
+                                    <TextBlock Grid.Row="7"
                                                Grid.Column="0"
                                                Text="Context window (tokens)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="4"
+                                    <TextBox Grid.Row="7"
                                              Grid.Column="1"
                                              x:Name="ContextWindowBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.ContextWindowSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="5"
+                                    <TextBlock Grid.Row="8"
                                                Grid.Column="0"
                                                Text="Compact threshold (0..1)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="5"
+                                    <TextBox Grid.Row="8"
                                              Grid.Column="1"
                                              x:Name="CompactThresholdBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.CompactThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="6"
+                                    <TextBlock Grid.Row="9"
                                                Grid.Column="0"
                                                Text="Reserve fraction (0..1)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="6"
+                                    <TextBox Grid.Row="9"
                                              Grid.Column="1"
                                              x:Name="ReserveFractionBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.ReserveFraction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="7"
+                                    <TextBlock Grid.Row="10"
                                                Grid.Column="0"
                                                Text="Keep recent messages"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="7"
+                                    <TextBox Grid.Row="10"
                                              Grid.Column="1"
                                              x:Name="KeepRecentBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.KeepRecentMessages, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="8"
+                                    <TextBlock Grid.Row="11"
                                                Grid.Column="0"
                                                Text="Tool result max chars"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="8"
+                                    <TextBox Grid.Row="11"
                                              Grid.Column="1"
                                              x:Name="ToolResultMaxCharsBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.ToolResultMaxChars, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="9"
+                                    <TextBlock Grid.Row="12"
                                                Grid.Column="0"
                                                Text="Max agent iterations"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="9"
+                                    <TextBox Grid.Row="12"
                                              Grid.Column="1"
                                              x:Name="MaxIterationsBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.MaxIterations, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <CheckBox Grid.Row="10"
+                                    <CheckBox Grid.Row="13"
                                               Grid.Column="0"
                                               Grid.ColumnSpan="2"
                                               x:Name="AutoCompactCheckBox"
@@ -249,7 +293,7 @@
                                               Margin="0,2,0,4"
                                               Foreground="{DynamicResource Theme.Text}" />
 
-                                    <CheckBox Grid.Row="11"
+                                    <CheckBox Grid.Row="14"
                                               Grid.Column="0"
                                               Grid.ColumnSpan="2"
                                               x:Name="UseToolRoleCheckBox"
@@ -258,12 +302,12 @@
                                               Margin="0,2,0,4"
                                               Foreground="{DynamicResource Theme.Text}" />
 
-                                    <TextBlock Grid.Row="12"
+                                    <TextBlock Grid.Row="15"
                                                Grid.Column="0"
                                                Text="Tool calling"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <ComboBox Grid.Row="12"
+                                    <ComboBox Grid.Row="15"
                                               Grid.Column="1"
                                               x:Name="ToolCallingModeCombo"
                                               SelectedIndex="{Binding Settings.ToolCallingModeIndex, Mode=TwoWay}"
@@ -273,12 +317,12 @@
                                         <ComboBoxItem Content="Native function calling" />
                                     </ComboBox>
 
-                                    <TextBlock Grid.Row="13"
+                                    <TextBlock Grid.Row="16"
                                                Grid.Column="0"
                                                Text="Memory bank"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <ComboBox Grid.Row="13"
+                                    <ComboBox Grid.Row="16"
                                               Grid.Column="1"
                                               x:Name="MemoryBankModeCombo"
                                               SelectedIndex="{Binding Settings.MemoryBankModeIndex, Mode=TwoWay}"
@@ -289,95 +333,95 @@
                                         <ComboBoxItem Content="Convention (read/update with file tools)" />
                                     </ComboBox>
 
-                                    <TextBlock Grid.Row="14"
+                                    <TextBlock Grid.Row="17"
                                                Grid.Column="0"
                                                Text="Request timeout (s)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="14"
+                                    <TextBox Grid.Row="17"
                                              Grid.Column="1"
                                              x:Name="TimeoutSecondsBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.TimeoutSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="15"
+                                    <TextBlock Grid.Row="18"
                                                Grid.Column="0"
                                                Text="Retry budget (min)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="15"
+                                    <TextBox Grid.Row="18"
                                              Grid.Column="1"
                                              x:Name="RetryTimeoutMinutesBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.RetryTimeoutMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="16"
+                                    <TextBlock Grid.Row="19"
                                                Grid.Column="0"
                                                Text="Retry base delay (s)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="16"
+                                    <TextBox Grid.Row="19"
                                              Grid.Column="1"
                                              x:Name="RetryBaseDelaySecondsBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.RetryBaseDelaySeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="17"
+                                    <TextBlock Grid.Row="20"
                                                Grid.Column="0"
                                                Text="Retry max delay (s)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="17"
+                                    <TextBox Grid.Row="20"
                                              Grid.Column="1"
                                              x:Name="RetryMaxDelaySecondsBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.RetryMaxDelaySeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="18"
+                                    <TextBlock Grid.Row="21"
                                                Grid.Column="0"
                                                Text="Input price ($/1M tokens)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="18"
+                                    <TextBox Grid.Row="21"
                                              Grid.Column="1"
                                              x:Name="InputPriceBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.InputPricePerMillion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="19"
+                                    <TextBlock Grid.Row="22"
                                                Grid.Column="0"
                                                Text="Cache-hit price ($/1M tokens)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="19"
+                                    <TextBox Grid.Row="22"
                                              Grid.Column="1"
                                              x:Name="CacheHitPriceBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.CacheHitPricePerMillion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock Grid.Row="20"
+                                    <TextBlock Grid.Row="23"
                                                Grid.Column="0"
                                                Text="Cache loss tolerable drop, %"
                                                ToolTip="Допустимое падение кэша, % (0 — любая потеря; 100 — потеря всего контекста)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="20"
+                                    <TextBox Grid.Row="23"
                                              Grid.Column="1"
                                              x:Name="CacheLossDropRatioBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.CacheLossDropRatioPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="21"
+                                    <TextBlock Grid.Row="24"
                                                Grid.Column="0"
                                                Text="Output price ($/1M tokens)"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="21"
+                                    <TextBox Grid.Row="24"
                                              Grid.Column="1"
                                              x:Name="OutputPriceBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.OutputPricePerMillion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <CheckBox Grid.Row="22"
+                                    <CheckBox Grid.Row="25"
                                               Grid.Column="0"
                                               Grid.ColumnSpan="2"
                                               x:Name="AllowSubagentsCheckBox"
@@ -386,29 +430,29 @@
                                               Margin="0,2,0,4"
                                               Foreground="{DynamicResource Theme.Text}" />
 
-                                    <TextBlock Grid.Row="23"
+                                    <TextBlock Grid.Row="26"
                                                Grid.Column="0"
                                                Text="Sub-agent max iterations"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="23"
+                                    <TextBox Grid.Row="26"
                                              Grid.Column="1"
                                              x:Name="SubagentMaxIterationsBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.SubagentMaxIterations, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="24"
+                                    <TextBlock Grid.Row="27"
                                                Grid.Column="0"
                                                Text="Sub-agent max depth"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="24"
+                                    <TextBox Grid.Row="27"
                                              Grid.Column="1"
                                              x:Name="SubagentMaxDepthBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.SubagentMaxDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <CheckBox Grid.Row="25"
+                                    <CheckBox Grid.Row="28"
                                               Grid.Column="0"
                                               Grid.ColumnSpan="2"
                                               x:Name="CheckpointsEnabledCheckBox"
@@ -417,12 +461,12 @@
                                               Margin="0,2,0,4"
                                               Foreground="{DynamicResource Theme.Text}" />
 
-                                    <TextBlock Grid.Row="26"
+                                    <TextBlock Grid.Row="29"
                                                Grid.Column="0"
                                                Text="Reasoning effort"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <ComboBox Grid.Row="26"
+                                    <ComboBox Grid.Row="29"
                                               Grid.Column="1"
                                               x:Name="ReasoningEffortCombo"
                                               SelectedIndex="{Binding Settings.ReasoningEffortIndex, Mode=TwoWay}"
@@ -438,18 +482,18 @@
                                         <ComboBoxItem Content="Max" />
                                     </ComboBox>
 
-                                    <TextBlock Grid.Row="27"
+                                    <TextBlock Grid.Row="30"
                                                Grid.Column="0"
                                                Text="Max stagnant repeats"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <TextBox Grid.Row="27"
+                                    <TextBox Grid.Row="30"
                                              Grid.Column="1"
                                              x:Name="MaxStagnantRepeatsBox"
                                              Margin="0,0,0,4"
                                              Text="{Binding Settings.MaxStagnantRepeats, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <CheckBox Grid.Row="28"
+                                    <CheckBox Grid.Row="31"
                                               Grid.Column="0"
                                               Grid.ColumnSpan="2"
                                               x:Name="StagnantLoopNudgeCheckBox"
@@ -458,12 +502,12 @@
                                               Margin="0,2,0,4"
                                               Foreground="{DynamicResource Theme.Text}" />
 
-                                    <TextBlock Grid.Row="29"
+                                    <TextBlock Grid.Row="32"
                                                Grid.Column="0"
                                                Text="MCP servers (JSON)"
                                                VerticalAlignment="Top"
                                                Margin="0,4,8,4" />
-                                    <StackPanel Grid.Row="29"
+                                    <StackPanel Grid.Row="32"
                                                 Grid.Column="1"
                                                 Margin="0,4,0,4">
                                         <TextBox x:Name="McpServersBox"
@@ -482,7 +526,7 @@
                                                 ToolTip="Open the official MCP server registry in your browser." />
                                     </StackPanel>
 
-                                    <CheckBox Grid.Row="30"
+                                    <CheckBox Grid.Row="33"
                                               Grid.Column="0"
                                               Grid.ColumnSpan="2"
                                               x:Name="NoRetryOn4xxCheckBox"

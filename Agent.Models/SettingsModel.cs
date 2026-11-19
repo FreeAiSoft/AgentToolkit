@@ -28,6 +28,8 @@ namespace Agent.Models
         private string _apiKey = "";
         private string _model = "gpt-4o-mini";
         private string _providerId = "";
+        private string _azureApiVersion = "";
+        private string _azureDeploymentName = "";
         private double _temperature = 0.2;
         private string _reasoningEffort = "";
         private string _skillsPath = "";
@@ -168,6 +170,8 @@ namespace Agent.Models
                 ApiKey = _apiKey,
                 Model = _model,
                 ProviderId = _providerId,
+                AzureApiVersion = _azureApiVersion,
+                AzureDeploymentName = _azureDeploymentName,
                 Temperature = _temperature,
                 ReasoningEffort = _reasoningEffort,
                 SkillsPath = _skillsPath,
@@ -315,6 +319,8 @@ namespace Agent.Models
             BaseUrl = data.BaseUrl;
             ApiKey = data.ApiKey;
             Model = data.Model;
+            AzureApiVersion = data.AzureApiVersion;
+            AzureDeploymentName = data.AzureDeploymentName;
             Temperature = data.Temperature;
             ReasoningEffort = data.ReasoningEffort;
             SkillsPath = data.SkillsPath;
@@ -638,10 +644,14 @@ namespace Agent.Models
             set
             {
                 var normalized = AiProviderId.Normalize(value);
+                if (AiProviderCatalog.Find(normalized) == null)
+                    normalized = AiProviderId.OpenAi;
                 if (SetProperty(ref _providerId, normalized))
                 {
                     OnPropertyChanged(nameof(ProviderDisplayName));
                     OnPropertyChanged(nameof(ProviderIndex));
+                    OnPropertyChanged(nameof(IsApiKeyVisible));
+                    OnPropertyChanged(nameof(IsAzureVisible));
                     ApplyProviderDefaults();
                 }
             }
@@ -687,6 +697,38 @@ namespace Agent.Models
             if (!string.IsNullOrWhiteSpace(spec.DefaultBaseUrl)) BaseUrl = spec.DefaultBaseUrl;
             if (!string.IsNullOrWhiteSpace(spec.DefaultModel)) Model = spec.DefaultModel;
             if (spec.ContextWindowSize > 0) ContextWindowSize = spec.ContextWindowSize;
+
+            // Back-fill Azure-specific defaults only when the user has not already typed a value.
+            if (spec.HasSetting(AiProviderSettingFlags.AzureApiVersion) && string.IsNullOrWhiteSpace(_azureApiVersion))
+                AzureApiVersion = spec.DefaultAzureApiVersion;
+        }
+
+        /// <summary>Azure OpenAI API version (query parameter <c>api-version</c>).</summary>
+        public string AzureApiVersion { get => _azureApiVersion; set => SetProperty(ref _azureApiVersion, value); }
+
+        /// <summary>Azure OpenAI deployment name; empty falls back to <see cref="Model"/>.</summary>
+        public string AzureDeploymentName { get => _azureDeploymentName; set => SetProperty(ref _azureDeploymentName, value); }
+
+        /// <summary>True when the selected provider requires an API key (drives the API key row visibility).</summary>
+        public bool IsApiKeyVisible
+        {
+            get
+            {
+                var spec = AiProviderCatalog.Find(_providerId);
+                return spec != null && spec.HasSetting(AiProviderSettingFlags.ApiKey);
+            }
+        }
+
+        /// <summary>True when the selected provider exposes Azure-specific fields.</summary>
+        public bool IsAzureVisible
+        {
+            get
+            {
+                var spec = AiProviderCatalog.Find(_providerId);
+                return spec != null &&
+                       (spec.HasSetting(AiProviderSettingFlags.AzureApiVersion) ||
+                        spec.HasSetting(AiProviderSettingFlags.AzureDeploymentName));
+            }
         }
 
         public double Temperature

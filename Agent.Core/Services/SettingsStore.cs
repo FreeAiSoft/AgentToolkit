@@ -17,6 +17,12 @@ namespace Agent.Core.Services
         /// <summary>Selected AI provider id (see <see cref="Agent.Core.Providers.AiProviderId"/>). Empty defaults to OpenAI.</summary>
         public string ProviderId { get; set; } = "";
 
+        /// <summary>Azure OpenAI API version (query parameter <c>api-version</c>).</summary>
+        public string AzureApiVersion { get; set; } = "";
+
+        /// <summary>Azure OpenAI deployment name; empty falls back to <see cref="Model"/>.</summary>
+        public string AzureDeploymentName { get; set; } = "";
+
         /// <summary>Sampling temperature sent to the model (0..1).</summary>
         public double Temperature { get; set; } = 0.2;
 

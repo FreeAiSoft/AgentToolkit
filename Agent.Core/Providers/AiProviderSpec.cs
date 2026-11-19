@@ -20,6 +20,15 @@ namespace Agent.Core.Providers
 
         public string DefaultModel { get; set; } = "";
 
+        /// <summary>Default Azure OpenAI <c>api-version</c>; empty for non-Azure providers.</summary>
+        public string DefaultAzureApiVersion { get; set; } = "";
+
+        /// <summary>Which provider-specific fields the API settings tab should reveal.</summary>
+        public AiProviderSettingFlags Settings { get; set; } = AiProviderSettingFlags.ApiKey;
+
+        /// <summary>True when <paramref name="flag"/> is set in <see cref="Settings"/>.</summary>
+        public bool HasSetting(AiProviderSettingFlags flag) => (Settings & flag) == flag;
+
         public AiProviderCapabilities Capabilities { get; set; } = AiProviderCapabilities.None;
 
         /// <summary>Typical context window (tokens) for the default model; used as a fallback.</summary>

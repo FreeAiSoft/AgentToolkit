@@ -37,7 +37,6 @@ namespace Agent.Core.Providers
             {
                 case "openai":
                 case "openai-native":
-                case "openai-compatible":
                     return OpenAi;
                 case "azure":
                 case "azure-openai":

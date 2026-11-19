@@ -56,6 +56,8 @@ namespace Agent.Core.Services
                 ? ToolCallingMode.Native
                 : ToolCallingMode.JsonChat;
 
+            var isAzure = string.Equals(spec?.Id, AiProviderId.AzureOpenAi, StringComparison.OrdinalIgnoreCase);
+
             return new OpenAiCompatibleProvider(new OpenAiOptions
             {
                 BaseUrl = ResolveBaseUrl(settings, spec),
@@ -63,6 +65,9 @@ namespace Agent.Core.Services
                 Model = ResolveModel(settings, spec),
                 RulesPath = PromptPaths.ResolveRulesDirectory(),
                 ToolCallingMode = toolCallingMode,
+                IsAzure = isAzure,
+                AzureApiVersion = ResolveAzureApiVersion(settings, spec),
+                AzureDeploymentName = isAzure ? (settings?.AzureDeploymentName ?? "").Trim() : "",
                 ContextWindowSize = settings.ContextWindowSize > 0 ? settings.ContextWindowSize : (spec?.ContextWindowSize ?? 409600),
                 TimeoutSeconds = settings.TimeoutSeconds > 0 ? settings.TimeoutSeconds : 300,
                 RetryTimeout = TimeSpan.FromMinutes(settings.RetryTimeoutMinutes > 0 ? settings.RetryTimeoutMinutes : 30),
@@ -89,6 +94,13 @@ namespace Agent.Core.Services
             if (!string.IsNullOrWhiteSpace(settings?.Model))
                 return settings.Model.Trim();
             return !string.IsNullOrWhiteSpace(spec?.DefaultModel) ? spec.DefaultModel : "gpt-4o-mini";
+        }
+
+        private static string ResolveAzureApiVersion(SettingsData settings, AiProviderSpec spec)
+        {
+            if (!string.IsNullOrWhiteSpace(settings?.AzureApiVersion))
+                return settings.AzureApiVersion.Trim();
+            return !string.IsNullOrWhiteSpace(spec?.DefaultAzureApiVersion) ? spec.DefaultAzureApiVersion : "";
         }
     }
 }

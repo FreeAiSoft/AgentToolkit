@@ -28,7 +28,7 @@ namespace Agent.Tests
             Assert.That(AiProviderId.Normalize(""), Is.EqualTo(AiProviderId.OpenAi));
             Assert.That(AiProviderId.Normalize("claude"), Is.EqualTo(AiProviderId.Anthropic));
             Assert.That(AiProviderId.Normalize("azure"), Is.EqualTo(AiProviderId.AzureOpenAi));
-            Assert.That(AiProviderId.Normalize("openai-compatible"), Is.EqualTo(AiProviderId.OpenAi));
+            Assert.That(AiProviderId.Normalize("openai-compatible"), Is.EqualTo(AiProviderId.OpenAiCompatible));
         }
 
         [Test]

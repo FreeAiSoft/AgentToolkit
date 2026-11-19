@@ -30,6 +30,15 @@ namespace Agent.Core.Services
 
         /// <summary>Directory of markdown files containing spec-processing and task-formation rules.</summary>
         public string RulesPath { get; set; } = PromptPaths.ResolveRulesDirectory();
+
+        /// <summary>True when the endpoint is Azure OpenAI (uses <c>deployments/{name}</c> and the <c>api-key</c> header).</summary>
+        public bool IsAzure { get; set; }
+
+        /// <summary>Azure OpenAI API version (query parameter <c>api-version</c>).</summary>
+        public string AzureApiVersion { get; set; } = "";
+
+        /// <summary>Azure OpenAI deployment name; empty falls back to <see cref="AiProviderOptions.Model"/>.</summary>
+        public string AzureDeploymentName { get; set; } = "";
     }
 
     /// <summary>
@@ -881,14 +890,38 @@ namespace Agent.Core.Services
 
             var json = payload.ToString(Formatting.None);
 
-            var url = (_options.BaseUrl ?? "https://api.openai.com/v1").TrimEnd('/') + "/chat/completions";
+            var url = BuildEndpointUrl();
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
-            if (!string.IsNullOrWhiteSpace(_options.ApiKey))
+            if (_options.IsAzure)
+            {
+                if (!string.IsNullOrWhiteSpace(_options.ApiKey))
+                    request.Headers.Add("api-key", _options.ApiKey);
+            }
+            else if (!string.IsNullOrWhiteSpace(_options.ApiKey))
+            {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
+            }
             return request;
+        }
+
+        private string BuildEndpointUrl()
+        {
+            if (_options.IsAzure)
+            {
+                var baseUrl = (_options.BaseUrl ?? "").TrimEnd('/');
+                var deployment = !string.IsNullOrWhiteSpace(_options.AzureDeploymentName)
+                    ? _options.AzureDeploymentName
+                    : (_options.Model ?? "gpt-4o-mini");
+                var url = baseUrl + "/openai/deployments/" + Uri.EscapeDataString(deployment) + "/chat/completions";
+                if (!string.IsNullOrWhiteSpace(_options.AzureApiVersion))
+                    url += "?api-version=" + Uri.EscapeDataString(_options.AzureApiVersion);
+                return url;
+            }
+
+            return (_options.BaseUrl ?? "https://api.openai.com/v1").TrimEnd('/') + "/chat/completions";
         }
 
         protected static JObject ParseJson(string content)
