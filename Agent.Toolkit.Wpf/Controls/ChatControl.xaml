@@ -69,7 +69,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Border x:Name="PinnedHeaderPanel" Grid.Row="0" Margin="0,0,0,4"
-                            Background="#1A64B5F6"
+                            Background="{DynamicResource Theme.ChatUserBackground}"
                             BorderThickness="0" CornerRadius="2" Padding="8,6"
                             Visibility="Collapsed">
                         <Grid>
@@ -139,9 +139,9 @@
                             <TextBlock.Foreground>
                                 <LinearGradientBrush MappingMode="RelativeToBoundingBox" SpreadMethod="Repeat"
                                                      StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#6E6E6E" Offset="0"/>
-                                    <GradientStop Color="#E9E9E9" Offset="0.5"/>
-                                    <GradientStop Color="#6E6E6E" Offset="1"/>
+                                    <GradientStop Color="{DynamicResource Theme.ShimmerLow}" Offset="0"/>
+                                    <GradientStop Color="{DynamicResource Theme.ShimmerHigh}" Offset="0.5"/>
+                                    <GradientStop Color="{DynamicResource Theme.ShimmerLow}" Offset="1"/>
                                 </LinearGradientBrush>
                             </TextBlock.Foreground>
                             <TextBlock.Style>
@@ -457,7 +457,7 @@
                                                     <!-- Green dot = the single activity indicator of the chat: a display projection of
                                                          ChatModel.ActiveChatConversation (ChatConversation.IsActive). No other element or
                                                          field in the view tracks which chat is active. -->
-                                                    <Ellipse Grid.Column="0" Width="8" Height="8" Fill="#7AC88F" Margin="0,0,7,0" VerticalAlignment="Center"
+                                                    <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{DynamicResource Theme.ActiveDot}" Margin="0,0,7,0" VerticalAlignment="Center"
                                                              ToolTip="Active chat"
                                                              Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}"/>
                                                     <TextBlock Grid.Column="1" Text="{Binding CardTitle}" TextWrapping="Wrap"
@@ -481,7 +481,7 @@
                                                         <Setter Property="Foreground" Value="{DynamicResource Theme.TextSecondary}"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsImportant}" Value="True">
-                                                                <Setter Property="Foreground" Value="#FF8C00"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource Theme.ImportantMark}"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>

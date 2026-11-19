@@ -46,19 +46,19 @@ namespace Agent.Toolkit.Wpf.Markdown
 
         private static readonly FontFamily CodeFont = new FontFamily("Consolas");
 
-        private static readonly SolidColorBrush TextBrush = Freeze("#F1F1F1");
-        private static readonly SolidColorBrush MutedBrush = Freeze("#9A9A9A");
-        private static readonly SolidColorBrush LinkBrush = Freeze("#569CD6");
-        private static readonly SolidColorBrush CodeBackground = Freeze("#1E1E1E");
-        private static readonly SolidColorBrush CodeInlineBackground = Freeze("#333337");
-        private static readonly SolidColorBrush CodeInlineForeground = Freeze("#DCDCDC");
-        private static readonly SolidColorBrush BorderBrush = Freeze("#3F3F46");
-        private static readonly SolidColorBrush QuoteBorderBrush = Freeze("#4A6B9A");
-        private static readonly SolidColorBrush QuoteBackground = Freeze("#1E2733");
-        private static readonly SolidColorBrush TableHeaderBackground = Freeze("#333337");
-        private static readonly SolidColorBrush TableEvenBackground = Freeze("#2A2A2E");
-        private static readonly SolidColorBrush TableOddBackground = Freeze("#252526");
-        private static readonly SolidColorBrush CheckedBrush = Freeze("#4CAF50");
+        private static Brush TextBrush => Resolve("Theme.Text", "#F1F1F1");
+        private static Brush MutedBrush => Resolve("Theme.TextSecondary", "#9A9A9A");
+        private static Brush LinkBrush => Resolve("Theme.Link", "#569CD6");
+        private static Brush CodeBackground => Resolve("Theme.CodeBackground", "#1E1E1E");
+        private static Brush CodeInlineBackground => Resolve("Theme.Control", "#333337");
+        private static Brush CodeInlineForeground => Resolve("Theme.CodeForeground", "#DCDCDC");
+        private static Brush BorderBrush => Resolve("Theme.Border", "#3F3F46");
+        private static Brush QuoteBorderBrush => Resolve("Theme.CardModeSwitchBorder", "#4A6B9A");
+        private static Brush QuoteBackground => Resolve("Theme.CardModeSwitchBackground", "#1E2733");
+        private static Brush TableHeaderBackground => Resolve("Theme.Control", "#333337");
+        private static Brush TableEvenBackground => Resolve("Theme.TableEvenBackground", "#2A2A2E");
+        private static Brush TableOddBackground => Resolve("Theme.Panel", "#252526");
+        private static Brush CheckedBrush => Resolve("Theme.ModeAct", "#4CAF50");
 
         /// <summary>
         /// Optional handler invoked when the user clicks a relative (non-http/https/mailto)
@@ -658,6 +658,14 @@ namespace Agent.Toolkit.Wpf.Markdown
             var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
             brush.Freeze();
             return brush;
+        }
+
+        private static Brush Resolve(string key, string fallbackHex)
+        {
+            var brush = Application.Current?.TryFindResource(key) as Brush;
+            if (brush != null)
+                return brush;
+            return Freeze(fallbackHex);
         }
     }
 }

@@ -16,11 +16,11 @@ namespace Agent.Toolkit.Wpf.Converters
     /// </summary>
     public class CodeTokensToTextBlockConverter : IValueConverter
     {
-        private static readonly SolidColorBrush KeywordBrush = Freeze("#569CD6");
-        private static readonly SolidColorBrush StringBrush = Freeze("#D69D85");
-        private static readonly SolidColorBrush CommentBrush = Freeze("#6A9955");
-        private static readonly SolidColorBrush NumberBrush = Freeze("#B5CEA8");
-        private static readonly SolidColorBrush PlainBrush = Freeze("#DCDCDC");
+        private static Brush KeywordBrush => Resolve("Theme.SyntaxKeyword", "#569CD6");
+        private static Brush StringBrush => Resolve("Theme.SyntaxString", "#D69D85");
+        private static Brush CommentBrush => Resolve("Theme.SyntaxComment", "#6A9955");
+        private static Brush NumberBrush => Resolve("Theme.SyntaxNumber", "#B5CEA8");
+        private static Brush PlainBrush => Resolve("Theme.CodeForeground", "#DCDCDC");
 
         private static readonly FontFamily CodeFont = new FontFamily("Consolas");
 
@@ -92,6 +92,14 @@ namespace Agent.Toolkit.Wpf.Converters
             var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
             brush.Freeze();
             return brush;
+        }
+
+        private static Brush Resolve(string key, string fallbackHex)
+        {
+            var brush = Application.Current?.TryFindResource(key) as Brush;
+            if (brush != null)
+                return brush;
+            return Freeze(fallbackHex);
         }
     }
 }

@@ -67,4 +67,26 @@
     <SolidColorBrush x:Key="Theme.ContextTrackBackground" Color="#1A000000"/>
     <SolidColorBrush x:Key="Theme.ContextCacheHit" Color="#66BB6A"/>
     <SolidColorBrush x:Key="Theme.ContextMiss" Color="#9E9E9E"/>
+    <SolidColorBrush x:Key="Theme.ContextNormal" Color="#1A73E8"/>
+    <SolidColorBrush x:Key="Theme.ContextWarning" Color="#EF6C00"/>
+    <SolidColorBrush x:Key="Theme.ContextOverflow" Color="#C62828"/>
+
+    <!-- ChatControl accents -->
+    <SolidColorBrush x:Key="Theme.ActiveDot" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="Theme.ImportantMark" Color="#EF6C00"/>
+    <SolidColorBrush x:Key="Theme.CheckpointHash" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="Theme.CheckpointState" Color="#1A73E8"/>
+
+    <!-- Markdown & syntax highlighting -->
+    <SolidColorBrush x:Key="Theme.CodeForeground" Color="#1E1E1E"/>
+    <SolidColorBrush x:Key="Theme.Link" Color="#1A73E8"/>
+    <SolidColorBrush x:Key="Theme.TableEvenBackground" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="Theme.SyntaxKeyword" Color="#0000FF"/>
+    <SolidColorBrush x:Key="Theme.SyntaxString" Color="#A31515"/>
+    <SolidColorBrush x:Key="Theme.SyntaxComment" Color="#008000"/>
+    <SolidColorBrush x:Key="Theme.SyntaxNumber" Color="#098658"/>
+
+    <!-- Status shimmer gradient stops -->
+    <Color x:Key="Theme.ShimmerLow">#6E6E6E</Color>
+    <Color x:Key="Theme.ShimmerHigh">#1E1E1E</Color>
 </ResourceDictionary>

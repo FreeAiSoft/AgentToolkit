@@ -711,7 +711,7 @@
                                                   Foreground="{DynamicResource Theme.Text}" />
                                         <TextBlock Text="Blocks the agent from reading files inside: bin, obj, .git, .vs, node_modules, packages, TestResults, .idea, .vscode, __pycache__."
                                                    FontSize="11"
-                                                   Foreground="#C8C8C8"
+                                                   Foreground="{DynamicResource Theme.TextMuted}"
                                                    TextWrapping="Wrap"
                                                    Margin="20,2,0,0" />
                                     </StackPanel>
@@ -726,7 +726,7 @@
                                                   Foreground="{DynamicResource Theme.Text}" />
                                         <TextBlock Text="Blocks the agent from reading: .env, web.config, SSH keys (id_rsa, id_dsa, id_ecdsa, id_ed25519), keys and certificates (*.pem, *.key, *.pfx, *.p12, *.snk, *.rdp, *.user, *.secret), appsettings*.json, and any file whose name contains &quot;credential&quot;."
                                                    FontSize="11"
-                                                   Foreground="#C8C8C8"
+                                                   Foreground="{DynamicResource Theme.TextMuted}"
                                                    TextWrapping="Wrap"
                                                    Margin="20,2,0,0" />
                                     </StackPanel>

@@ -400,15 +400,16 @@ namespace Agent.Toolkit.Wpf.Controls
 
             WpfLog.Warn("MermaidDiagramControl: showing text fallback. Reason: " + (reason ?? "unknown"));
 
-            Content = new TextBlock
+            var fallback = new TextBlock
             {
                 Text = text,
                 FontFamily = new FontFamily("Consolas"),
                 TextWrapping = TextWrapping.Wrap,
-                Foreground = new SolidColorBrush(Color.FromRgb(0xF1, 0xF1, 0xF1)),
-                Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E)),
                 Padding = new Thickness(8, 6, 8, 6)
             };
+            fallback.SetResourceReference(TextBlock.ForegroundProperty, "Theme.Text");
+            fallback.SetResourceReference(TextBlock.BackgroundProperty, "Theme.CodeBackground");
+            Content = fallback;
         }
 
         private sealed class MermaidSize

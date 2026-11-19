@@ -28,10 +28,6 @@ namespace Agent.Toolkit.Wpf.Markdown
             typeof(MarkdownBlockContextMenu),
             new PropertyMetadata(null));
 
-        private static readonly SolidColorBrush MenuBackground = Freeze("#252526");
-        private static readonly SolidColorBrush MenuBorder = Freeze("#3F3F46");
-        private static readonly SolidColorBrush MenuForeground = Freeze("#F1F1F1");
-
         // Two fully built menus shared by every rendered block, one per caption. They are created
         // once and never mutated while they are open - see CreateMenu for why that matters.
         private static ContextMenu? _textMenu;
@@ -91,15 +87,15 @@ namespace Agent.Toolkit.Wpf.Markdown
         {
             var menu = new ContextMenu
             {
-                Background = MenuBackground,
-                BorderBrush = MenuBorder,
                 BorderThickness = new Thickness(1),
                 Padding = new Thickness(0, 3, 0, 3),
-                Foreground = MenuForeground,
                 Template = CreateMenuTemplate(),
                 UseLayoutRounding = true,
                 SnapsToDevicePixels = true
             };
+            menu.SetResourceReference(Control.BackgroundProperty, "Theme.Panel");
+            menu.SetResourceReference(Control.BorderBrushProperty, "Theme.Border");
+            menu.SetResourceReference(Control.ForegroundProperty, "Theme.Text");
 
             var item = new MenuItem
             {
@@ -193,7 +189,7 @@ namespace Agent.Toolkit.Wpf.Markdown
                 "<ControlTemplate TargetType='ContextMenu'" +
                 " xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'" +
                 " xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>" +
-                "<Border Background='#252526' BorderBrush='#3F3F46' BorderThickness='1'" +
+                "<Border Background='{DynamicResource Theme.Panel}' BorderBrush='{DynamicResource Theme.Border}' BorderThickness='1'" +
                 " CornerRadius='2' Padding='{TemplateBinding Padding}' SnapsToDevicePixels='True'" +
                 " UseLayoutRounding='True'>" +
                 "<StackPanel IsItemsHost='True' KeyboardNavigation.DirectionalNavigation='Cycle'/>" +
@@ -217,29 +213,22 @@ namespace Agent.Toolkit.Wpf.Markdown
                 "</Border>" +
                 "<ControlTemplate.Triggers>" +
                 "<Trigger Property='IsHighlighted' Value='True'>" +
-                "<Setter TargetName='Bd' Property='Background' Value='#3F3F46'/>" +
+                "<Setter TargetName='Bd' Property='Background' Value='{DynamicResource Theme.ControlHover}'/>" +
                 "</Trigger>" +
                 "<Trigger Property='IsEnabled' Value='False'>" +
-                "<Setter Property='Foreground' Value='#9A9A9A'/>" +
+                "<Setter Property='Foreground' Value='{DynamicResource Theme.TextSecondary}'/>" +
                 "</Trigger>" +
                 "</ControlTemplate.Triggers>" +
                 "</ControlTemplate>");
 
             var style = new Style(typeof(MenuItem));
             style.Setters.Add(new Setter(Control.TemplateProperty, template));
-            style.Setters.Add(new Setter(Control.ForegroundProperty, MenuForeground));
+            style.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("Theme.Text")));
             style.Setters.Add(new Setter(Control.BackgroundProperty, Brushes.Transparent));
             style.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(0)));
             style.Setters.Add(new Setter(Control.CursorProperty, Cursors.Arrow));
             style.Setters.Add(new Setter(FrameworkElement.MinWidthProperty, 120.0));
             return style;
-        }
-
-        private static SolidColorBrush Freeze(string hex)
-        {
-            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
-            brush.Freeze();
-            return brush;
         }
     }
 }

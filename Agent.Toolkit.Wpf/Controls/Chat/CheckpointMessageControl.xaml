@@ -17,13 +17,13 @@
                     Padding="0"
                     Margin="4,0,0,0"
                     ToolTip="Open iteration diff">
-                <TextBlock Text="{Binding Payload.ShortHash}" Foreground="#4CAF50" FontFamily="Consolas" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Payload.ShortHash}" Foreground="{DynamicResource Theme.CheckpointHash}" FontFamily="Consolas" VerticalAlignment="Center"/>
             </Button>
         </StackPanel>
         <Button Content="Restore"
                 Click="OnRestore"
                 Style="{StaticResource IconButtonStyle}"
-                Foreground="#64B5F6"
+                Foreground="{DynamicResource Theme.CheckpointState}"
                 Margin="8,0,0,0"
                 Visibility="{Binding Payload.HasChanges, Converter={StaticResource BoolToVis}}"/>
     </StackPanel>

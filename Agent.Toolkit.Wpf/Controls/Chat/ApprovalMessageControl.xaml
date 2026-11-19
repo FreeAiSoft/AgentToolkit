@@ -47,7 +47,7 @@
 
             <!-- Decision line: collapsed to 0 height while pending, 5px margin once shown. -->
             <Border Margin="0,5,0,0"
-                    Background="#00000000"
+                    Background="Transparent"
                     BorderBrush="{DynamicResource Theme.ApprovalDecided}"
                     BorderThickness="1"
                     CornerRadius="3"

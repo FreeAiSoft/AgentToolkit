@@ -13,7 +13,7 @@
         <ScrollViewer MaxHeight="200"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
-                      Background="Black">
+                      Background="{DynamicResource Theme.CodeBackground}">
             <ItemsControl ItemsSource="{Binding ToolBodyBlocks, Mode=OneWay}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>

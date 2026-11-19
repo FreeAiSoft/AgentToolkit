@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Agent.Core.Context;
 using Agent.Core.Models;
 using Agent.Models;
@@ -17,12 +16,6 @@ namespace Agent.Toolkit.Wpf.Controls
     /// </summary>
     public partial class ContextIndicator : UserControl
     {
-        private static readonly Brush IdleBrush = Freeze(new SolidColorBrush(Color.FromRgb(0x6E, 0x6E, 0x6E)));
-        private static readonly Brush NormalBrush = Freeze(new SolidColorBrush(Color.FromRgb(0x64, 0xB5, 0xF6)));
-        private static readonly Brush WarningBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x8C, 0x00)));
-        private static readonly Brush OverflowBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36)));
-        private static readonly Brush CacheHitBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xA5, 0xD6, 0xA7)));
-
         public static readonly DependencyProperty ModelProperty = DependencyProperty.Register(
             nameof(Model), typeof(ChatModel), typeof(ContextIndicator),
             new PropertyMetadata(null, OnModelChanged));
@@ -156,8 +149,8 @@ namespace Agent.Toolkit.Wpf.Controls
             CacheHitColumn.Width = new GridLength(cachePercent, GridUnitType.Star);
             MissColumn.Width = new GridLength(Math.Max(0.0, usedPercent - cachePercent), GridUnitType.Star);
             RemainderColumn.Width = new GridLength(Math.Max(0.0, 100.0 - usedPercent), GridUnitType.Star);
-            CacheHitSegment.Background = CacheHitBrush;
-            MissSegment.Background = BrushFor(info.Status);
+            CacheHitSegment.SetResourceReference(Border.BackgroundProperty, "Theme.ContextCacheHit");
+            MissSegment.SetResourceReference(Border.BackgroundProperty, BrushKeyFor(info.Status));
 
             FillText.Text = info.FillText;
             FillText.Visibility = ShowDetails ? Visibility.Visible : Visibility.Collapsed;
@@ -175,26 +168,19 @@ namespace Agent.Toolkit.Wpf.Controls
                 : Visibility.Collapsed;
         }
 
-        private static Brush BrushFor(ContextUsageStatus status)
+        private static string BrushKeyFor(ContextUsageStatus status)
         {
             switch (status)
             {
                 case ContextUsageStatus.Overflow:
-                    return OverflowBrush;
+                    return "Theme.ContextOverflow";
                 case ContextUsageStatus.Warning:
-                    return WarningBrush;
+                    return "Theme.ContextWarning";
                 case ContextUsageStatus.Normal:
-                    return NormalBrush;
+                    return "Theme.ContextNormal";
                 default:
-                    return IdleBrush;
+                    return "Theme.ContextMiss";
             }
-        }
-
-        private static Brush Freeze(Brush brush)
-        {
-            if (brush.CanFreeze)
-                brush.Freeze();
-            return brush;
         }
     }
 }
