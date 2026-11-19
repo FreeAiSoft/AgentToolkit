@@ -82,6 +82,7 @@ namespace Agent.Models
         private string _proxyUsername = "";
         private string _proxyPassword = "";
         private string _baseTheme = "Dark";
+        private string _themeMode = "Manual";
         private string _primaryHex = "#6750A4";
         private string _secondaryHex = "#625B71";
 
@@ -221,6 +222,7 @@ namespace Agent.Models
                 ProxyUsername = _proxyUsername,
                 ProxyPassword = _proxyPassword,
                 BaseTheme = _baseTheme,
+                ThemeMode = _themeMode,
                 PrimaryHex = _primaryHex,
                 SecondaryHex = _secondaryHex,
                 AdditionalReadPaths = new List<string>(_additionalReadPaths),
@@ -367,6 +369,7 @@ namespace Agent.Models
             ProxyUsername = data.ProxyUsername;
             ProxyPassword = data.ProxyPassword;
             BaseTheme = data.BaseTheme;
+            ThemeMode = data.ThemeMode ?? "Manual";
             PrimaryHex = data.PrimaryHex;
             SecondaryHex = data.SecondaryHex;
             _additionalReadPaths.Clear();
@@ -866,6 +869,24 @@ namespace Agent.Models
         {
             get => string.Equals(_baseTheme, "Light", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             set => BaseTheme = value == 1 ? "Light" : "Dark";
+        }
+
+        /// <summary>Who owns the theme: "Manual" (toolkit combo) or "Auto" (host application).</summary>
+        public string ThemeMode
+        {
+            get => _themeMode;
+            set
+            {
+                if (SetProperty(ref _themeMode, value))
+                    OnPropertyChanged(nameof(ThemeModeIndex));
+            }
+        }
+
+        /// <summary>Combo index of <see cref="ThemeMode"/>: 0 = Manual, 1 = Auto.</summary>
+        public int ThemeModeIndex
+        {
+            get => string.Equals(_themeMode, "Auto", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            set => ThemeMode = value == 1 ? "Auto" : "Manual";
         }
 
         /// <summary>Combo index of <see cref="ToolCallingMode"/>: 0 = JsonChat, 1 = Native.</summary>

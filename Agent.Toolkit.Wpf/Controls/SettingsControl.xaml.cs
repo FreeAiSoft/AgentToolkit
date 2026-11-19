@@ -25,13 +25,19 @@ namespace Agent.Toolkit.Wpf.Controls
         public SettingsControl()
         {
             InitializeComponent();
+            AgentThemeManager.EnsureInitialized();
             DataContextChanged += OnDataContextChanged;
         }
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            // Apply the persisted ownership mode first, then honor it.
+            var mode = GetThemeMode();
+            AgentThemeManager.SetMode(mode);
+            ThemeCombo.IsEnabled = mode == AgentThemeMode.Manual;
+
             // In Auto mode the host owns the theme and must not be overridden here.
-            if (AgentThemeManager.Mode != AgentThemeMode.Manual)
+            if (mode != AgentThemeMode.Manual)
                 return;
 
             AgentThemeManager.ApplyFromSettings(GetBaseTheme());
@@ -46,6 +52,19 @@ namespace Agent.Toolkit.Wpf.Controls
             AgentThemeManager.ApplyFromSettings(ThemeCombo.SelectedIndex == 1);
         }
 
+        private void OnThemeModeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ThemeModeCombo == null || ThemeModeCombo.SelectedIndex < 0)
+                return;
+
+            var mode = ThemeModeCombo.SelectedIndex == 1 ? AgentThemeMode.Auto : AgentThemeMode.Manual;
+            AgentThemeManager.SetMode(mode);
+            ThemeCombo.IsEnabled = mode == AgentThemeMode.Manual;
+
+            if (mode == AgentThemeMode.Manual)
+                AgentThemeManager.ApplyFromSettings(GetBaseTheme());
+        }
+
         private string GetBaseTheme()
         {
             var dataContext = DataContext;
@@ -55,6 +74,19 @@ namespace Agent.Toolkit.Wpf.Controls
             var settingsProperty = dataContext.GetType().GetProperty("Settings");
             var settings = settingsProperty?.GetValue(dataContext) as SettingsModel;
             return settings?.BaseTheme ?? "Dark";
+        }
+
+        private AgentThemeMode GetThemeMode()
+        {
+            var dataContext = DataContext;
+            if (dataContext == null)
+                return AgentThemeMode.Manual;
+
+            var settingsProperty = dataContext.GetType().GetProperty("Settings");
+            var settings = settingsProperty?.GetValue(dataContext) as SettingsModel;
+            return string.Equals(settings?.ThemeMode, "Auto", StringComparison.OrdinalIgnoreCase)
+                ? AgentThemeMode.Auto
+                : AgentThemeMode.Manual;
         }
 
         /// <summary>Describes a host-provided settings section.</summary>

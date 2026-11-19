@@ -858,11 +858,34 @@
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="Theme source"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,4" />
+                                    <ComboBox Grid.Row="0"
+                                              Grid.Column="1"
+                                              x:Name="ThemeModeCombo"
+                                              Width="160"
+                                              HorizontalAlignment="Left"
+                                              SelectedIndex="{Binding Settings.ThemeModeIndex, Mode=TwoWay}"
+                                              SelectionChanged="OnThemeModeSelectionChanged"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,0,4">
+                                        <ComboBoxItem Content="AgentToolkit" />
+                                        <ComboBoxItem Content="Host application" />
+                                    </ComboBox>
+                                    <TextBlock Grid.Row="1"
+                                               Grid.Column="0"
                                                Text="Theme"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,4" />
-                                    <ComboBox Grid.Column="1"
+                                    <ComboBox Grid.Row="1"
+                                              Grid.Column="1"
                                               x:Name="ThemeCombo"
                                               Width="160"
                                               HorizontalAlignment="Left"

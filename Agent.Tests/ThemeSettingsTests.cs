@@ -105,6 +105,94 @@ namespace Agent.Tests
             Assert.That(model.BaseTheme, Is.EqualTo("Dark"));
         }
 
+        [Test]
+        public void Normalize_InvalidThemeMode_DefaultsToManual()
+        {
+            var settings = new SettingsData { ThemeMode = "Solarized" };
+            SettingsData.Normalize(settings);
+            Assert.That(settings.ThemeMode, Is.EqualTo("Manual"));
+        }
+
+        [Test]
+        public void Normalize_EmptyThemeMode_DefaultsToManual()
+        {
+            var settings = new SettingsData { ThemeMode = "" };
+            SettingsData.Normalize(settings);
+            Assert.That(settings.ThemeMode, Is.EqualTo("Manual"));
+        }
+
+        [Test]
+        public void Normalize_ValidAutoThemeMode_IsAccepted()
+        {
+            var settings = new SettingsData { ThemeMode = "Auto" };
+            SettingsData.Normalize(settings);
+            Assert.That(settings.ThemeMode, Is.EqualTo("Auto"));
+        }
+
+        [Test]
+        public void Normalize_ThemeMode_IsCaseInsensitive()
+        {
+            var settings = new SettingsData { ThemeMode = "auto" };
+            SettingsData.Normalize(settings);
+            Assert.That(string.Equals(settings.ThemeMode, "Auto", StringComparison.OrdinalIgnoreCase), Is.True);
+        }
+
+        [Test]
+        public void SettingsModel_Defaults_ToManualThemeMode()
+        {
+            var model = new SettingsModel(new FakeSettingsStore(new SettingsData()));
+            model.Load();
+
+            Assert.That(model.ThemeMode, Is.EqualTo("Manual"));
+            Assert.That(model.ThemeModeIndex, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SettingsModel_ThemeModeIndex_One_SetsThemeModeToAuto()
+        {
+            var model = new SettingsModel(new FakeSettingsStore(new SettingsData()));
+            model.Load();
+
+            model.ThemeModeIndex = 1;
+
+            Assert.That(model.ThemeMode, Is.EqualTo("Auto"));
+        }
+
+        [Test]
+        public void SettingsModel_ThemeMode_Auto_SetsThemeModeIndexToOne()
+        {
+            var model = new SettingsModel(new FakeSettingsStore(new SettingsData()));
+            model.Load();
+
+            model.ThemeMode = "Auto";
+
+            Assert.That(model.ThemeModeIndex, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SettingsModel_ThemeMode_IsCaseInsensitive()
+        {
+            var model = new SettingsModel(new FakeSettingsStore(new SettingsData { ThemeMode = "auto" }));
+            model.Load();
+
+            Assert.That(model.ThemeModeIndex, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SettingsModel_ThemeModeIndex_RoundTrips()
+        {
+            var model = new SettingsModel(new FakeSettingsStore(new SettingsData()));
+            model.Load();
+
+            model.ThemeModeIndex = 1;
+            Assert.That(model.ThemeModeIndex, Is.EqualTo(1));
+            Assert.That(model.ThemeMode, Is.EqualTo("Auto"));
+
+            model.ThemeModeIndex = 0;
+            Assert.That(model.ThemeModeIndex, Is.EqualTo(0));
+            Assert.That(model.ThemeMode, Is.EqualTo("Manual"));
+        }
+
         private sealed class FakeSettingsStore : ISettingsStore
         {
             private readonly SettingsData _data;

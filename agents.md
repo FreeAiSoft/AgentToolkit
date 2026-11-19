@@ -114,7 +114,9 @@ CI `.github/workflows/build.yml` собирает те же пакеты и пу
 - Менеджер: `Agent.Toolkit.Wpf/Theming/AgentThemeManager.cs` — пишет значения кистей
   в `Application.Current.Resources`, поэтому `DynamicResource`-ссылки перекрашивают UI на лету.
 - Контролы ссылаются на цвета через `{DynamicResource Theme.*}` (не `StaticResource`).
-- Настройка: `SettingsModel.ThemeIndex` (0 = Dark, 1 = Light) и секция «Theme» в `SettingsControl`.
+- Настройка: `SettingsModel.ThemeIndex` (0 = Dark, 1 = Light) и `SettingsModel.ThemeModeIndex`
+  (0 = Manual, 1 = Auto). На вкладке «Theme» в `SettingsControl` — ComboBox «Theme source»
+  (AgentToolkit / Host application) и ComboBox «Theme» (Dark / Light).
 
 ### Хост-контракт: два режима владения темой
 
@@ -146,6 +148,11 @@ AgentThemeManager.Apply(light ? "Light" : "Dark");
 
 Логика режимов и детект смены вынесены в UI-свободный `Agent.Models.ThemeModeState` (netstandard2.0),
 поэтому контракт покрыт юнит-тестами без WPF `Application`.
+
+Режим также выбирается пользователем на вкладке «Theme» в `SettingsControl` (ComboBox «Theme source»,
+связан с `SettingsModel.ThemeModeIndex`, значение персистится в `SettingsData.ThemeMode`). При загрузке
+`SettingsControl` применяет сохранённый режим через `AgentThemeManager.SetMode`, а в режиме `Auto`
+отключает ComboBox «Theme», т.к. темой владеет хост-приложение.
 
 ### Добавить новую тему
 

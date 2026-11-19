@@ -74,6 +74,9 @@ namespace Agent.Core.Services
         /// <summary>Base theme name: "Dark" or "Light".</summary>
         public string BaseTheme { get; set; } = "Dark";
 
+        /// <summary>Theme ownership mode: "Manual" (toolkit combo owns the theme) or "Auto" (host owns it).</summary>
+        public string ThemeMode { get; set; } = "Manual";
+
         /// <summary>Primary accent color as "#RRGGBB".</summary>
         public string PrimaryHex { get; set; } = "#6750A4";
 
@@ -274,6 +277,10 @@ namespace Agent.Core.Services
                 (!string.Equals(settings.BaseTheme, "Dark", StringComparison.OrdinalIgnoreCase) &&
                  !string.Equals(settings.BaseTheme, "Light", StringComparison.OrdinalIgnoreCase)))
                 settings.BaseTheme = "Dark";
+            if (string.IsNullOrWhiteSpace(settings.ThemeMode) ||
+                (!string.Equals(settings.ThemeMode, "Manual", StringComparison.OrdinalIgnoreCase) &&
+                 !string.Equals(settings.ThemeMode, "Auto", StringComparison.OrdinalIgnoreCase)))
+                settings.ThemeMode = "Manual";
             if (!IsHexColor(settings.PrimaryHex))
                 settings.PrimaryHex = "#6750A4";
             if (!IsHexColor(settings.SecondaryHex))
