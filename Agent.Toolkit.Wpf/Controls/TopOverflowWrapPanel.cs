@@ -61,9 +61,10 @@ namespace Agent.Toolkit.Wpf.Controls
                     CoerceMaxItemsPerColumn));
 
         /// <summary>
-        /// Gets or sets the maximum number of children that may share a single column.
-        /// Zero or less means no limit. When a column reaches the limit, the next child
-        /// starts a new column to the right, so the buttons wrap in fixed-size groups.
+        /// Gets or sets the maximum number of children that may share a single column
+        /// once the column overflows to the right. Zero or less means no limit. When all
+        /// children fit in a single column they stay together regardless of this value;
+        /// otherwise a column breaks after this many children.
         /// </summary>
         public int MaxItemsPerColumn
         {

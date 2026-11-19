@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Shapes;
 using Agent.Models;
+using Agent.Mvvm;
 using Agent.Toolkit.Wpf.Converters;
 using Agent.Toolkit.Wpf.Theming;
 using Material.Icons;
@@ -22,15 +23,23 @@ namespace Agent.Toolkit.Wpf.Controls
     /// </summary>
     public partial class SettingsControl : UserControl
     {
+        private const int SettingsToastAutoHideSeconds = 6;
+        private SettingsModel _settingsModel;
+
         public SettingsControl()
         {
             InitializeComponent();
+            ToastBanner.CloseRequested += OnToastClose;
             AgentThemeManager.EnsureInitialized();
             DataContextChanged += OnDataContextChanged;
         }
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            DetachSettingsEvents();
+            _settingsModel = GetSettingsModel();
+            AttachSettingsEvents();
+
             // Apply the persisted ownership mode first, then honor it.
             var mode = GetThemeMode();
             AgentThemeManager.SetMode(mode);
@@ -65,28 +74,81 @@ namespace Agent.Toolkit.Wpf.Controls
                 AgentThemeManager.ApplyFromSettings(GetBaseTheme());
         }
 
-        private string GetBaseTheme()
-        {
-            var dataContext = DataContext;
-            if (dataContext == null)
-                return "Dark";
-
-            var settingsProperty = dataContext.GetType().GetProperty("Settings");
-            var settings = settingsProperty?.GetValue(dataContext) as SettingsModel;
-            return settings?.BaseTheme ?? "Dark";
-        }
+        private string GetBaseTheme() => GetSettingsModel()?.BaseTheme ?? "Dark";
 
         private AgentThemeMode GetThemeMode()
         {
-            var dataContext = DataContext;
-            if (dataContext == null)
-                return AgentThemeMode.Manual;
-
-            var settingsProperty = dataContext.GetType().GetProperty("Settings");
-            var settings = settingsProperty?.GetValue(dataContext) as SettingsModel;
+            var settings = GetSettingsModel();
             return string.Equals(settings?.ThemeMode, "Auto", StringComparison.OrdinalIgnoreCase)
                 ? AgentThemeMode.Auto
                 : AgentThemeMode.Manual;
+        }
+
+        private SettingsModel GetSettingsModel()
+        {
+            var dataContext = DataContext;
+            if (dataContext == null)
+                return null;
+
+            var settingsProperty = dataContext.GetType().GetProperty("Settings");
+            return settingsProperty?.GetValue(dataContext) as SettingsModel;
+        }
+
+        private void AttachSettingsEvents()
+        {
+            if (_settingsModel == null)
+                return;
+
+            _settingsModel.SettingsSaved += OnSettingsSaved;
+            _settingsModel.Notify += OnSettingsNotify;
+        }
+
+        private void DetachSettingsEvents()
+        {
+            if (_settingsModel == null)
+                return;
+
+            _settingsModel.SettingsSaved -= OnSettingsSaved;
+            _settingsModel.Notify -= OnSettingsNotify;
+            _settingsModel = null;
+        }
+
+        private void OnSettingsSaved(object sender, EventArgs e)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => OnSettingsSaved(sender, e)));
+                return;
+            }
+
+            ShowToast(NotificationKind.Success, "Settings saved.");
+        }
+
+        private void OnSettingsNotify(object sender, Notify notify)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => OnSettingsNotify(sender, notify)));
+                return;
+            }
+
+            if (notify == null)
+                return;
+
+            ShowToast((NotificationKind)notify.NotifyLevel, notify.Message ?? "");
+        }
+
+        private void ShowToast(NotificationKind kind, string message)
+        {
+            ToastBanner.Kind = kind;
+            ToastBanner.Message = message;
+            ToastBanner.AutoHideSeconds = SettingsToastAutoHideSeconds;
+            ToastBanner.Visibility = Visibility.Visible;
+        }
+
+        private void OnToastClose(object sender, RoutedEventArgs e)
+        {
+            ToastBanner.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>Describes a host-provided settings section.</summary>

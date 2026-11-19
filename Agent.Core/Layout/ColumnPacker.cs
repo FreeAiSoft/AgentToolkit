@@ -21,7 +21,9 @@ namespace Agent.Core.Layout
         /// for an unlimited height.
         /// </param>
         /// <param name="maxItemsPerColumn">
-        /// Maximum number of items allowed in one column; zero or less means unlimited.
+        /// Maximum number of items allowed in one column once the column has to overflow
+        /// to the right; zero or less means unlimited. Ignored when the whole list fits in
+        /// a single column within <paramref name="availableHeight"/>.
         /// </param>
         public static List<List<int>> Pack(
             IReadOnlyList<double> itemHeights,
@@ -32,6 +34,18 @@ namespace Agent.Core.Layout
             var columns = new List<List<int>>();
             if (itemHeights == null || itemHeights.Count == 0)
                 return columns;
+
+            // Keep everything in a single bottom-anchored column while the available
+            // height accommodates the whole list. The per-column item limit only applies
+            // once the column actually overflows to the right.
+            if (FitsInSingleColumn(itemHeights, spacing, availableHeight))
+            {
+                var single = new List<int>(itemHeights.Count);
+                for (int i = itemHeights.Count - 1; i >= 0; i--)
+                    single.Add(i);
+                columns.Add(single);
+                return columns;
+            }
 
             var current = new List<int>();
             columns.Add(current);
@@ -56,6 +70,24 @@ namespace Agent.Core.Layout
             }
 
             return columns;
+        }
+
+        private static bool FitsInSingleColumn(
+            IReadOnlyList<double> itemHeights,
+            double spacing,
+            double availableHeight)
+        {
+            double total = 0;
+            for (int i = 0; i < itemHeights.Count; i++)
+            {
+                if (i > 0)
+                    total += spacing;
+                total += itemHeights[i];
+                if (total > availableHeight)
+                    return false;
+            }
+
+            return true;
         }
     }
 }

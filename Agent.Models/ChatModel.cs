@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,6 +43,7 @@ namespace Agent.Models
         /// "which chat is active". Activity is never stored, cached or mirrored anywhere else.
         /// </summary>
         private ChatConversation _activeChatConversation;
+        private ChatConversation _contextObservedConversation;
         private ChatViewMode _viewMode = ChatViewMode.Conversation;
         private ChatMessage _pinnedMessage;
         private AgentMode _mode = AgentMode.Plan;
@@ -166,6 +168,8 @@ namespace Agent.Models
                 OnPropertyChanged(nameof(ActiveConversationId));
                 OnPropertyChanged(nameof(HasActiveConversation));
                 UpdateActiveFlags();
+                ObserveContextConversation();
+                OnPropertyChanged(nameof(ContextUsage));
             }
         }
 
@@ -1067,6 +1071,51 @@ namespace Agent.Models
             ContextWindowSize = Math.Max(0, contextWindowSize);
             CompactThresholdTokens = Math.Max(0, compactThresholdTokens);
             MaxInputTokens = Math.Max(0, maxInputTokens);
+            OnPropertyChanged(nameof(ContextUsage));
+        }
+
+        /// <summary>
+        /// Ready-to-render snapshot of the context-window indicator, recomputed on demand from the
+        /// active conversation and the window budget. The model is the single owner of this value and
+        /// raises <see cref="INotifyPropertyChanged.PropertyChanged"/> for it whenever any input changes,
+        /// so the view binds to it instead of pulling the individual counters.
+        /// </summary>
+        public ContextUsageInfo ContextUsage
+        {
+            get
+            {
+                var conversation = ActiveChatConversation;
+                return ContextUsageCalculator.Compute(
+                    conversation?.UsedTokens ?? 0,
+                    ContextWindowSize,
+                    CompactThresholdTokens,
+                    MaxInputTokens,
+                    conversation?.Usage,
+                    conversation?.LastCacheHitTokens ?? 0,
+                    conversation?.LastCacheMissTokens ?? 0);
+            }
+        }
+
+        private void ObserveContextConversation()
+        {
+            if (_contextObservedConversation != null)
+                _contextObservedConversation.PropertyChanged -= OnConversationContextChanged;
+
+            _contextObservedConversation = _activeChatConversation;
+
+            if (_contextObservedConversation != null)
+                _contextObservedConversation.PropertyChanged += OnConversationContextChanged;
+        }
+
+        private void OnConversationContextChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ChatConversation.UsedTokens) ||
+                e.PropertyName == nameof(ChatConversation.LastCacheHitTokens) ||
+                e.PropertyName == nameof(ChatConversation.LastCacheMissTokens) ||
+                e.PropertyName == nameof(ChatConversation.Usage))
+            {
+                OnPropertyChanged(nameof(ContextUsage));
+            }
         }
 
         /// <summary>

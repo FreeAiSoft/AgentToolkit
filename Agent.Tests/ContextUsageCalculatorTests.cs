@@ -145,5 +145,36 @@ namespace Agent.Tests
 
             Assert.That(info.CacheText, Is.EqualTo("Cache hit / miss: 0 / 3,000"));
         }
+
+        [Test]
+        public void Compute_MissAndRemainder_SumToHundred()
+        {
+            var info = ContextUsageCalculator.Compute(30000, 100000, 0, 0, null, cacheHitTokens: 20000);
+
+            Assert.That(info.RatioPercent, Is.EqualTo(30.0).Within(0.001));
+            Assert.That(info.CacheHitRatioPercent, Is.EqualTo(20.0).Within(0.001));
+            Assert.That(info.MissRatioPercent, Is.EqualTo(10.0).Within(0.001));
+            Assert.That(info.RemainderRatioPercent, Is.EqualTo(70.0).Within(0.001));
+        }
+
+        [Test]
+        public void Compute_Remainder_IsFullWhenNoWindow()
+        {
+            var info = ContextUsageCalculator.Compute(0, 0, 0, 0, null);
+
+            Assert.That(info.IsAvailable, Is.False);
+            Assert.That(info.MissRatioPercent, Is.Zero);
+            Assert.That(info.RemainderRatioPercent, Is.EqualTo(100.0));
+        }
+
+        [Test]
+        public void Compute_Miss_ClampsWhenCacheExceedsUsed()
+        {
+            var info = ContextUsageCalculator.Compute(10000, 100000, 0, 0, null, cacheHitTokens: 50000);
+
+            Assert.That(info.RatioPercent, Is.EqualTo(10.0).Within(0.001));
+            Assert.That(info.CacheHitRatioPercent, Is.EqualTo(10.0).Within(0.001));
+            Assert.That(info.MissRatioPercent, Is.Zero);
+        }
     }
 }

@@ -250,14 +250,14 @@
                                      VerticalScrollBarVisibility="Auto"
                                      PreviewKeyDown="OnInputKeyDown"/>
                             <toolkit:TopOverflowWrapPanel Grid.Column="1" VerticalAlignment="Bottom" VerticalSpacing="4" ColumnSpacing="8" MaxItemsPerColumn="2">
-                                <Button x:Name="ClearInputButton" Width="26" Height="26"
+                                <Button x:Name="ClearInputButton" Width="22" Height="22"
                                         Click="OnClearInput"
                                         Style="{StaticResource IconButtonStyle}"
                                         ToolTip="Clear message">
                                     <Path Data="{Binding Source={x:Static mi:MaterialIconKind.Broom}, Converter={StaticResource MaterialIconToGeometry}}"
                                           Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"/>
                                 </Button>
-                                <Button x:Name="AttachButton" Width="26" Height="26"
+                                <Button x:Name="AttachButton" Width="22" Height="22"
                                         Click="OnAttach"
                                         Style="{StaticResource IconButtonStyle}"
                                         ToolTip="Attach image or file">
@@ -265,7 +265,7 @@
                                           Fill="{DynamicResource Theme.Text}" Stretch="Uniform"
                                           Width="14" Height="14"/>
                                 </Button>
-                                <Button x:Name="MicButton" Width="26" Height="26"
+                                <Button x:Name="MicButton" Width="22" Height="22"
                                         Click="OnMicClick"
                                         Style="{StaticResource IconButtonStyle}"
                                         ToolTip="Start voice input">
@@ -278,7 +278,7 @@
                                         </Path.Data>
                                     </Path>
                                 </Button>
-                                <Button x:Name="SendButton" Width="26" Height="26"
+                                <Button x:Name="SendButton" Width="22" Height="22"
                                         Click="OnSend"
                                         Style="{StaticResource IconButtonStyle}"
                                         ToolTip="Send (Enter)">

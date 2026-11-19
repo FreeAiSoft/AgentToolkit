@@ -40,6 +40,12 @@ namespace Agent.Core.Context
         /// <summary>Fill ratio of the cache-hit segment (0..100), clamped to <see cref="RatioPercent"/>.</summary>
         public double CacheHitRatioPercent { get; set; }
 
+        /// <summary>Fill ratio of the non-cache segment (0..100): <see cref="RatioPercent"/> minus the cache-hit part.</summary>
+        public double MissRatioPercent => Math.Max(0.0, RatioPercent - CacheHitRatioPercent);
+
+        /// <summary>Unused portion of the window (0..100): 100 minus the clamped <see cref="RatioPercent"/>.</summary>
+        public double RemainderRatioPercent => Math.Max(0.0, 100.0 - RatioPercent);
+
         /// <summary>Visual severity derived from the configured thresholds.</summary>
         public ContextUsageStatus Status { get; set; }
 

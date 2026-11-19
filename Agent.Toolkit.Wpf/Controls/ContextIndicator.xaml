@@ -1,24 +1,76 @@
 ﻿<UserControl x:Class="Agent.Toolkit.Wpf.Controls.ContextIndicator"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Agent.Toolkit.Wpf.Controls"
+             xmlns:conv="clr-namespace:Agent.Toolkit.Wpf.Converters">
+    <UserControl.Resources>
+        <conv:StarGridLengthConverter x:Key="StarWidth"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
     <StackPanel>
-        <Grid x:Name="FillTrack" Height="4">
+        <Grid Height="4">
             <Border Background="{DynamicResource Theme.ContextTrackBackground}"/>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="CacheHitColumn" Width="0*"/>
-                    <ColumnDefinition x:Name="MissColumn" Width="0*"/>
-                    <ColumnDefinition x:Name="RemainderColumn" Width="1*"/>
+                    <ColumnDefinition Width="{Binding ContextUsage.CacheHitRatioPercent, Converter={StaticResource StarWidth}, FallbackValue=0*}"/>
+                    <ColumnDefinition Width="{Binding ContextUsage.MissRatioPercent, Converter={StaticResource StarWidth}, FallbackValue=0*}"/>
+                    <ColumnDefinition Width="{Binding ContextUsage.RemainderRatioPercent, Converter={StaticResource StarWidth}, FallbackValue=1*}"/>
                 </Grid.ColumnDefinitions>
-                <Border x:Name="CacheHitSegment" Grid.Column="0" Background="{DynamicResource Theme.ContextCacheHit}"/>
-                <Border x:Name="MissSegment" Grid.Column="1" Background="{DynamicResource Theme.ContextMiss}"/>
+                <Border Grid.Column="0" Background="{DynamicResource Theme.ContextCacheHit}"/>
+                <Border Grid.Column="1">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{DynamicResource Theme.ContextMiss}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ContextUsage.Status}" Value="Normal">
+                                    <Setter Property="Background" Value="{DynamicResource Theme.ContextNormal}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ContextUsage.Status}" Value="Warning">
+                                    <Setter Property="Background" Value="{DynamicResource Theme.ContextWarning}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ContextUsage.Status}" Value="Overflow">
+                                    <Setter Property="Background" Value="{DynamicResource Theme.ContextOverflow}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
             </Grid>
         </Grid>
-        <TextBlock x:Name="FillText" Margin="0,4,0,0" Foreground="{DynamicResource Theme.TextMuted}"
-                   Text="Context window: —"/>
-        <TextBlock x:Name="CacheText" Margin="0,2,0,0" Foreground="{DynamicResource Theme.TextSecondary}"
-                   TextWrapping="Wrap" Visibility="Collapsed"/>
-        <TextBlock x:Name="StatsText" Margin="0,2,0,0" Foreground="{DynamicResource Theme.TextSecondary}"
-                   TextWrapping="Wrap" Visibility="Collapsed"/>
+        <TextBlock Margin="0,4,0,0" Foreground="{DynamicResource Theme.TextMuted}"
+                   Text="{Binding ContextUsage.FillText}"
+                   Visibility="{Binding ShowDetails, RelativeSource={RelativeSource AncestorType={x:Type local:ContextIndicator}}, Converter={StaticResource BoolToVis}}"/>
+        <TextBlock Margin="0,2,0,0" Foreground="{DynamicResource Theme.TextSecondary}" TextWrapping="Wrap"
+                   Text="{Binding ContextUsage.CacheText}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="{Binding ShowDetails, RelativeSource={RelativeSource AncestorType={x:Type local:ContextIndicator}}, Converter={StaticResource BoolToVis}}"/>
+                    <Style.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        <TextBlock Margin="0,2,0,0" Foreground="{DynamicResource Theme.TextSecondary}" TextWrapping="Wrap"
+                   Text="{Binding ContextUsage.StatsText}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="{Binding ShowDetails, RelativeSource={RelativeSource AncestorType={x:Type local:ContextIndicator}}, Converter={StaticResource BoolToVis}}"/>
+                    <Style.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
     </StackPanel>
 </UserControl>

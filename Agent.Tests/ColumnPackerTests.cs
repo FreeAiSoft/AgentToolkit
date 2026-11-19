@@ -8,12 +8,12 @@ namespace Agent.Tests
     public class ColumnPackerTests
     {
         [Test]
-        public void Pack_MaxTwoPerColumn_SplitsIntoPairs()
+        public void Pack_HeightFitsTwo_SplitsIntoPairs()
         {
             var columns = ColumnPacker.Pack(
                 new double[] { 10, 10, 10, 10 },
                 spacing: 4,
-                availableHeight: double.PositiveInfinity,
+                availableHeight: 24,
                 maxItemsPerColumn: 2);
 
             Assert.That(columns, Has.Count.EqualTo(2));
@@ -32,6 +32,48 @@ namespace Agent.Tests
 
             Assert.That(columns, Has.Count.EqualTo(1));
             Assert.That(columns[0], Is.EqualTo(new[] { 3, 2, 1, 0 }));
+        }
+
+        [Test]
+        public void Pack_AllItemsFit_SingleColumnEvenWithMaxPerColumn()
+        {
+            var columns = ColumnPacker.Pack(
+                new double[] { 10, 10, 10, 10 },
+                spacing: 4,
+                availableHeight: 52,
+                maxItemsPerColumn: 2);
+
+            Assert.That(columns, Has.Count.EqualTo(1));
+            Assert.That(columns[0], Is.EqualTo(new[] { 3, 2, 1, 0 }));
+        }
+
+        [Test]
+        public void Pack_UnlimitedHeight_UsesSingleColumnEvenWithMaxPerColumn()
+        {
+            var columns = ColumnPacker.Pack(
+                new double[] { 10, 10, 10, 10 },
+                spacing: 4,
+                availableHeight: double.PositiveInfinity,
+                maxItemsPerColumn: 2);
+
+            Assert.That(columns, Has.Count.EqualTo(1));
+            Assert.That(columns[0], Is.EqualTo(new[] { 3, 2, 1, 0 }));
+        }
+
+        [Test]
+        public void Pack_HeightFitsOnlyOne_SpreadsHorizontally()
+        {
+            var columns = ColumnPacker.Pack(
+                new double[] { 10, 10, 10, 10 },
+                spacing: 4,
+                availableHeight: 14,
+                maxItemsPerColumn: 2);
+
+            Assert.That(columns, Has.Count.EqualTo(4));
+            Assert.That(columns[0], Is.EqualTo(new[] { 3 }));
+            Assert.That(columns[1], Is.EqualTo(new[] { 2 }));
+            Assert.That(columns[2], Is.EqualTo(new[] { 1 }));
+            Assert.That(columns[3], Is.EqualTo(new[] { 0 }));
         }
 
         [Test]
