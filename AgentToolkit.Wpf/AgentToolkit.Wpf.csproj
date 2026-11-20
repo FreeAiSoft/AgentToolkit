@@ -13,7 +13,12 @@
     <PackageId>AgentToolkit.Wpf</PackageId>
     <Description>AgentToolkit.Wpf: shared WPF controls for the agent hosts.</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+  <!-- Package readme shown on nuget.org / in the local feed. -->
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
