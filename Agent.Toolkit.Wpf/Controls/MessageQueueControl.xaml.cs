@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using Agent.Core.Models;
 
 namespace Agent.Toolkit.Wpf.Controls
@@ -16,6 +17,7 @@ namespace Agent.Toolkit.Wpf.Controls
     public partial class MessageQueueControl : UserControl
     {
         private ObservableCollection<PendingMessage> _messages = new ObservableCollection<PendingMessage>();
+        private readonly object _syncRoot = new object();
 
         public MessageQueueControl()
         {
@@ -45,6 +47,7 @@ namespace Agent.Toolkit.Wpf.Controls
             _messages.CollectionChanged -= OnCollectionChanged;
 
             _messages = collection;
+            BindingOperations.EnableCollectionSynchronization(_messages, _syncRoot);
             QueueList.ItemsSource = _messages;
             _messages.CollectionChanged += OnCollectionChanged;
             Reindex();
@@ -53,6 +56,12 @@ namespace Agent.Toolkit.Wpf.Controls
 
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => OnCollectionChanged(sender, e)));
+                return;
+            }
+
             Reindex();
             UpdateVisibility();
             Changed?.Invoke(this, EventArgs.Empty);

@@ -16,9 +16,20 @@
                           HorizontalScrollBarVisibility="Disabled"
                           Background="{DynamicResource Theme.CodeBackground}"
                           Visibility="{Binding ShowReasoning, Converter={StaticResource BoolToVis}}">
-                <TextBox Text="{Binding ReasoningDisplayText, Mode=OneWay}" TextWrapping="Wrap"
+                <TextBox Text="{Binding ReasoningDisplayText, Mode=OneWay}"
                          Foreground="{DynamicResource Theme.TextMuted}" FontStyle="Italic"
-                         IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0"/>
+                         IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsThinking}" Value="True">
+                                    <Setter Property="TextWrapping" Value="NoWrap"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
             </ScrollViewer>
             <ItemsControl ItemsSource="{Binding Blocks, Mode=OneWay}">
                 <ItemsControl.ItemTemplate>

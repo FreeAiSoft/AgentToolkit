@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -36,6 +37,7 @@ namespace Agent.Toolkit.Wpf.Controls
         private bool _pinnedExpanded;
         private bool _restoringUiState;
         private bool _suppressPermissionEvents;
+        private readonly object _syncRoot = new object();
         private IMicrophoneRecorder _mic;
         private ISpeechToTextService _stt;
 
@@ -139,6 +141,11 @@ namespace Agent.Toolkit.Wpf.Controls
             ChatMessages.Messages = model.Messages;
             MessageQueue.Messages = model.Pending;
             ChatMessages.Filter = message => !ReferenceEquals(message, model.PinnedMessage);
+
+            // Register cross-thread synchronization BEFORE the views are created, so the
+            // CollectionView built by ItemsSource allows background mutations.
+            BindingOperations.EnableCollectionSynchronization(model.Attachments, _syncRoot);
+            BindingOperations.EnableCollectionSynchronization(model.History, _syncRoot);
             AttachmentsList.ItemsSource = model.Attachments;
             HistoryList.ItemsSource = model.History;
 

@@ -150,7 +150,7 @@ namespace Agent.Core.Models
         /// streaming. Showing only this trailing window keeps WPF from re-laying out an
         /// ever-growing wrapped block on every flush; the full text is shown once done.
         /// </summary>
-        public const int ReasoningStreamTailLength = 8000;
+        public const int ReasoningStreamTailLength = 2000;
 
         /// <summary>
         /// Text rendered in the reasoning expander. While <see cref="IsThinking"/> is true,

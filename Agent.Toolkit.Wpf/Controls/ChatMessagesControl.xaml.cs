@@ -28,6 +28,7 @@ namespace Agent.Toolkit.Wpf.Controls
         private ObservableCollection<ChatMessage> _messages = new ObservableCollection<ChatMessage>();
         private ICollectionView? _view;
         private bool _autoScroll = true;
+        private readonly object _syncRoot = new object();
 
         public ChatMessagesControl()
         {
@@ -123,6 +124,7 @@ namespace Agent.Toolkit.Wpf.Controls
         private void AttachView(ObservableCollection<ChatMessage> messages)
         {
             _messages = messages;
+            BindingOperations.EnableCollectionSynchronization(_messages, _syncRoot);
             _view = CollectionViewSource.GetDefaultView(_messages);
             _view.Filter = FilterPredicate;
             ChatList.ItemsSource = _view;
