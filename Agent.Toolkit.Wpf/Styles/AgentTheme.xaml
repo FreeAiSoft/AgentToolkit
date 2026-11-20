@@ -42,7 +42,7 @@
     <conv:AgentModeToToggleValueConverter x:Key="ModeToToggle"/>
     <conv:EnumMatchConverter x:Key="PhaseStreamingVisibility" Match="Streaming" WhenMatch="Visible" WhenDifferent="Collapsed"/>
     <conv:EnumMatchConverter x:Key="PhaseErrorVisibility" Match="Error" WhenMatch="Visible" WhenDifferent="Collapsed"/>
-    <conv:EnumMatchConverter x:Key="PhaseNotStreaming" Match="Streaming" WhenMatch="Collapsed" WhenDifferent="Visible"/>
+    <conv:EnumMatchConverter x:Key="PhaseNotStreaming" Match="Streaming" WhenMatch="False" WhenDifferent="True"/>
     <conv:AllTrueMultiConverter x:Key="AllTrue"/>
     <Style TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>

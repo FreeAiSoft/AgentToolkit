@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Agent.Toolkit.Wpf.Controls.ChatControl"
+<UserControl x:Class="Agent.Toolkit.Wpf.Controls.ChatControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:toolkit="clr-namespace:Agent.Toolkit.Wpf.Controls"
@@ -308,8 +308,8 @@
                                 ToolTip="Summarize the conversation to free context space">
                             <Button.IsEnabled>
                                 <MultiBinding Converter="{StaticResource AllTrue}">
-                                    <Binding Path="Chat.HasActiveConversation"/>
-                                    <Binding Path="Chat.Phase" Converter="{StaticResource PhaseNotStreaming}"/>
+                                    <Binding Path="HasActiveConversation"/>
+                                    <Binding Path="Phase" Converter="{StaticResource PhaseNotStreaming}"/>
                                 </MultiBinding>
                             </Button.IsEnabled>
                             <Grid>
@@ -434,8 +434,18 @@
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0">
-                        <Button HorizontalAlignment="Left" Content="New chat" Click="OnNewChat" Margin="0,5,0,0"/>
-                        <Button HorizontalAlignment="Right" Content="Clear history" Click="OnClearHistory" Margin="0,5,0,0"/>
+                        <Button HorizontalAlignment="Left" Click="OnNewChat" Margin="0,5,0,0"
+                                Width="26" Height="26"
+                                Style="{StaticResource ChatInputActionButtonStyle}" ToolTip="New chat">
+                            <Path Data="{Binding Source={x:Static mi:MaterialIconKind.Plus}, Converter={StaticResource MaterialIconToGeometry}}"
+                                  Fill="{DynamicResource Theme.Text}" Width="15" Height="15" Stretch="Uniform"/>
+                        </Button>
+                        <Button HorizontalAlignment="Right" Click="OnClearHistory" Margin="0,5,0,0"
+                                Width="22" Height="22"
+                                Style="{StaticResource IconButtonStyle}" ToolTip="Clear history">
+                            <Path Data="{Binding Source={x:Static mi:MaterialIconKind.Broom}, Converter={StaticResource MaterialIconToGeometry}}"
+                                  Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"/>
+                        </Button>
                     </Grid>
 
                     <TextBlock Grid.Row="1" Text="Chat history" FontWeight="Bold" HorizontalAlignment="Center"

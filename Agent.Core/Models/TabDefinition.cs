@@ -64,11 +64,11 @@ namespace Agent.Core.Models
     {
         /// <summary>The built-in chat tab.</summary>
         public static TabDefinition Chat { get; } =
-            new TabDefinition("Chat", "Chat", "Chat", "MessageOutline", "Message");
+            new TabDefinition("Chat", "Chat", outlineIconKey: "MessageOutline", filledIconKey: "Message");
 
         /// <summary>The built-in settings tab.</summary>
         public static TabDefinition Settings { get; } =
-            new TabDefinition("Settings", "Settings", "Settings", "CogOutline", "Cog");
+            new TabDefinition("Settings", "Settings", outlineIconKey: "CogOutline", filledIconKey: "Cog");
 
         /// <summary>All core-owned tabs in display order: Chat, Settings.</summary>
         public static IReadOnlyList<TabDefinition> All { get; } = new[] { Chat, Settings };
