@@ -302,6 +302,8 @@ namespace Agent.Core.Services
             CancellationToken cancellationToken)
         {
             var toolAcc = new Dictionary<int, ToolCallAccumulator>();
+            var reasoningOpen = false;
+            var contentOpen = false;
             using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -348,17 +350,35 @@ namespace Agent.Core.Services
                         AccumulateToolCalls(delta["tool_calls"], toolAcc);
 
                         if (!string.IsNullOrEmpty(reasoningDelta))
-                            reasoning.Append(reasoningDelta);
-                        if (!string.IsNullOrEmpty(contentDelta))
-                            content.Append(contentDelta);
-
-                        if ((!string.IsNullOrEmpty(reasoningDelta) || !string.IsNullOrEmpty(contentDelta)) && progress != null)
                         {
-                            progress.Report(new ChatStreamDelta
+                            reasoning.Append(reasoningDelta);
+                            if (!reasoningOpen)
                             {
-                                ReasoningDelta = reasoningDelta,
-                                ContentDelta = contentDelta
-                            });
+                                if (contentOpen)
+                                {
+                                    progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd });
+                                    contentOpen = false;
+                                }
+                                progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningBegin });
+                                reasoningOpen = true;
+                            }
+                            progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningDelta, Text = reasoningDelta, ReasoningDelta = reasoningDelta });
+                        }
+
+                        if (!string.IsNullOrEmpty(contentDelta))
+                        {
+                            content.Append(contentDelta);
+                            if (!contentOpen)
+                            {
+                                if (reasoningOpen)
+                                {
+                                    progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningEnd });
+                                    reasoningOpen = false;
+                                }
+                                progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentBegin });
+                                contentOpen = true;
+                            }
+                            progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = contentDelta, ContentDelta = contentDelta });
                         }
                     }
                     else if (!inSse && trimmed.StartsWith("{", StringComparison.Ordinal))
@@ -374,12 +394,20 @@ namespace Agent.Core.Services
                         var r = ExtractReasoning(messageObj);
 
                         if (!string.IsNullOrEmpty(r))
+                        {
                             reasoning.Append(r);
-                        if (!string.IsNullOrEmpty(c))
-                            content.Append(c);
+                            progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningBegin });
+                            progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningDelta, Text = r, ReasoningDelta = r });
+                            progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningEnd });
+                        }
 
-                        if ((!string.IsNullOrEmpty(r) || !string.IsNullOrEmpty(c)) && progress != null)
-                            progress.Report(new ChatStreamDelta { ReasoningDelta = r, ContentDelta = c });
+                        if (!string.IsNullOrEmpty(c))
+                        {
+                            content.Append(c);
+                            progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentBegin });
+                            progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = c, ContentDelta = c });
+                            progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd });
+                        }
 
                         RecordUsage(obj["usage"]);
 
@@ -395,6 +423,11 @@ namespace Agent.Core.Services
                     // otherwise: ignore (e.g. an SSE "event:" line)
                 }
             }
+
+            if (reasoningOpen)
+                progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningEnd });
+            if (contentOpen)
+                progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd });
 
             FinalizeToolCalls(toolCalls, toolAcc);
         }

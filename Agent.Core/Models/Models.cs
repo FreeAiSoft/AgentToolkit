@@ -231,9 +231,45 @@ namespace Agent.Core.Models
         public IReadOnlyList<NativeToolCall> ToolCalls { get; set; } = new List<NativeToolCall>();
     }
 
+    /// <summary>
+    /// Phase of a <see cref="ChatStreamDelta"/> event. Explicit phases let providers mark the
+    /// boundaries of a reasoning/content segment, so the consumer can create a separate chat
+    /// message per segment instead of appending every delta to the first one.
+    /// </summary>
+    public enum ChatStreamPhase
+    {
+        /// <summary>Legacy delta without an explicit phase (backward compatibility).</summary>
+        Delta = 0,
+
+        ReasoningBegin,
+        ReasoningDelta,
+        ReasoningEnd,
+
+        ContentBegin,
+        ContentDelta,
+        ContentEnd,
+
+        /// <summary>
+        /// End of one model call inside the agent loop. The assembler closes any dangling
+        /// segments and resets its streaming pointers (the Cline <c>reset()</c> equivalent).
+        /// </summary>
+        TurnEnd
+    }
+
     /// <summary>A single incremental chunk of a streamed chat response.</summary>
     public class ChatStreamDelta
     {
+        /// <summary>Phase of this event. Defaults to <see cref="ChatStreamPhase.Delta"/> for legacy behaviour.</summary>
+        public ChatStreamPhase Phase { get; set; } = ChatStreamPhase.Delta;
+
+        /// <summary>Text carried by the event: the incremental text for *Delta and the accumulated/final text for *End.</summary>
+        public string Text { get; set; }
+
+        /// <summary>Stable segment id. The assembler mints one on *Begin when the provider does not supply its own.</summary>
+        public string SegmentId { get; set; }
+
+        // ---- legacy fields (kept for backward compatibility) ----
+
         /// <summary>Incremental reasoning text, when the model emits a reasoning chunk.</summary>
         public string ReasoningDelta { get; set; }
 

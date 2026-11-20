@@ -149,8 +149,9 @@ namespace Agent.Tests
 
             Assert.That(reply.Answer, Is.EqualTo("Hello"));
             Assert.That(reply.FinishReason, Is.EqualTo("end_turn"));
-            Assert.That(progress.Reported.Count, Is.EqualTo(1));
-            Assert.That(progress.Reported[0].ContentDelta, Is.EqualTo("Hello"));
+            Assert.That(progress.Reported.Any(d => d.ContentDelta == "Hello"), Is.True);
+            Assert.That(progress.Reported.Any(d => d.Phase == ChatStreamPhase.ContentBegin), Is.True);
+            Assert.That(progress.Reported.Any(d => d.Phase == ChatStreamPhase.ContentEnd), Is.True);
             Assert.That(provider.TotalTokenUsage.PromptTokens, Is.EqualTo(10));
             Assert.That(provider.TotalTokenUsage.CompletionTokens, Is.EqualTo(5));
         }

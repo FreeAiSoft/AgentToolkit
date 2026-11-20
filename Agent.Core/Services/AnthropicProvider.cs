@@ -354,6 +354,8 @@ namespace Agent.Core.Services
             CancellationToken cancellationToken)
         {
             var toolBlocks = new Dictionary<int, AnthropicToolBlock>();
+            var contentBlockTypes = new Dictionary<int, string>();
+            var blockText = new Dictionary<int, StringBuilder>();
             var promptTokens = 0;
             var cacheReadTokens = 0;
             var completionTokens = 0;
@@ -389,14 +391,28 @@ namespace Agent.Core.Services
                         case "content_block_start":
                             var startIndex = evt["index"]?.Value<int>() ?? 0;
                             var block = evt["content_block"];
-                            if (block?["type"]?.Value<string>() == "tool_use")
+                            var blockType = block?["type"]?.Value<string>();
+                            if (!string.IsNullOrEmpty(blockType))
+                                contentBlockTypes[startIndex] = blockType;
+
+                            switch (blockType)
                             {
-                                toolBlocks[startIndex] = new AnthropicToolBlock
-                                {
-                                    Id = block["id"]?.Value<string>(),
-                                    Name = block["name"]?.Value<string>(),
-                                    Json = new StringBuilder()
-                                };
+                                case "tool_use":
+                                    toolBlocks[startIndex] = new AnthropicToolBlock
+                                    {
+                                        Id = block["id"]?.Value<string>(),
+                                        Name = block["name"]?.Value<string>(),
+                                        Json = new StringBuilder()
+                                    };
+                                    break;
+                                case "thinking":
+                                    blockText[startIndex] = new StringBuilder();
+                                    progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningBegin });
+                                    break;
+                                case "text":
+                                    blockText[startIndex] = new StringBuilder();
+                                    progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentBegin });
+                                    break;
                             }
                             break;
 
@@ -410,7 +426,8 @@ namespace Agent.Core.Services
                                     if (!string.IsNullOrEmpty(text))
                                     {
                                         content.Append(text);
-                                        progress?.Report(new ChatStreamDelta { ContentDelta = text });
+                                        if (blockText.TryGetValue(deltaIndex, out var ctb)) ctb.Append(text);
+                                        progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = text, ContentDelta = text });
                                     }
                                     break;
                                 case "thinking_delta":
@@ -418,7 +435,8 @@ namespace Agent.Core.Services
                                     if (!string.IsNullOrEmpty(thinking))
                                     {
                                         reasoning.Append(thinking);
-                                        progress?.Report(new ChatStreamDelta { ReasoningDelta = thinking });
+                                        if (blockText.TryGetValue(deltaIndex, out var rtb)) rtb.Append(thinking);
+                                        progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningDelta, Text = thinking, ReasoningDelta = thinking });
                                     }
                                     break;
                                 case "input_json_delta":
@@ -426,6 +444,25 @@ namespace Agent.Core.Services
                                     if (toolBlocks.TryGetValue(deltaIndex, out var tb) && !string.IsNullOrEmpty(partial))
                                         tb.Json.Append(partial);
                                     break;
+                            }
+                            break;
+
+                        case "content_block_stop":
+                            var stopIndex = evt["index"]?.Value<int>() ?? 0;
+                            if (contentBlockTypes.TryGetValue(stopIndex, out var stopType))
+                            {
+                                var stopText = blockText.TryGetValue(stopIndex, out var stb) ? stb.ToString() : "";
+                                switch (stopType)
+                                {
+                                    case "thinking":
+                                        progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningEnd, Text = stopText });
+                                        break;
+                                    case "text":
+                                        progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd, Text = stopText });
+                                        break;
+                                }
+                                contentBlockTypes.Remove(stopIndex);
+                                blockText.Remove(stopIndex);
                             }
                             break;
 
@@ -439,6 +476,22 @@ namespace Agent.Core.Services
                             completionTokens = ReadTokenCount(evt["usage"], "output_tokens");
                             break;
                     }
+                }
+            }
+
+            foreach (var kv in contentBlockTypes.ToList())
+            {
+                var idx = kv.Key;
+                var type = kv.Value;
+                var finalText = blockText.TryGetValue(idx, out var fb) ? fb.ToString() : "";
+                switch (type)
+                {
+                    case "thinking":
+                        progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningEnd, Text = finalText });
+                        break;
+                    case "text":
+                        progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd, Text = finalText });
+                        break;
                 }
             }
 

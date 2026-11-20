@@ -367,6 +367,7 @@ namespace Agent.Core.AgentTools
 
                 var prepared = await PrepareContextAsync(messages, systemPrompt, effectiveBudget, cancellationToken).ConfigureAwait(false);
                 var response = await CallWithRecoveryAsync(prepared, toolDefinitions, effectiveBudget, cancellationToken, progress).ConfigureAwait(false);
+                ReportTurnEnd(progress);
 
                 if (toolCallingMode == ToolCallingMode.Native)
                 {
@@ -625,6 +626,9 @@ namespace Agent.Core.AgentTools
             }
         }
 
+        private static void ReportTurnEnd(IProgress<ChatStreamDelta> progress)
+            => progress?.Report(new ChatStreamDelta { Phase = ChatStreamPhase.TurnEnd });
+
         private async Task<ChatResponse> CallModelAsync(
             PreparedContext prepared,
             IReadOnlyList<ToolDefinition> tools,
@@ -635,8 +639,21 @@ namespace Agent.Core.AgentTools
                 return await streaming.ChatStreamingAsync(prepared.Messages, prepared.SystemPrompt, tools, progress, cancellationToken).ConfigureAwait(false);
 
             var response = await _ai.ChatAsync(prepared.Messages, prepared.SystemPrompt, tools, cancellationToken).ConfigureAwait(false);
+
             if (progress != null && !string.IsNullOrEmpty(response?.Reasoning))
-                progress.Report(new ChatStreamDelta { ReasoningDelta = response.Reasoning });
+            {
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningBegin });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningDelta, Text = response.Reasoning, ReasoningDelta = response.Reasoning });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningEnd });
+            }
+
+            if (progress != null && !string.IsNullOrEmpty(response?.Answer))
+            {
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentBegin });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = response.Answer, ContentDelta = response.Answer });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd });
+            }
+
             return response;
         }
 

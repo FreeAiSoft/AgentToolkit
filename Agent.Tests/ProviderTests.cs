@@ -512,5 +512,158 @@ namespace Agent.Tests
         }
 
 
+        private static List<ChatStreamSegmentEventArgs> Assemble(IEnumerable<ChatStreamDelta> deltas)
+        {
+            var assembler = new ChatStreamAssembler();
+            var events = new List<ChatStreamSegmentEventArgs>();
+            assembler.SegmentChanged += (s, e) => events.Add(e);
+            foreach (var d in deltas)
+                assembler.OnDelta(d);
+            return events;
+        }
+
+        [Test]
+        public async Task AnthropicStreaming_EmitsReasoningSegmentPhases()
+        {
+            var sse =
+                "event: message_start\n" +
+                "data: {\"type\":\"message_start\",\"message\":{\"usage\":{\"input_tokens\":10,\"cache_read_input_tokens\":2}}}\n\n" +
+                "event: content_block_start\n" +
+                "data: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\"}}\n\n" +
+                "event: content_block_delta\n" +
+                "data: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"think\"}}\n\n" +
+                "event: content_block_stop\n" +
+                "data: {\"type\":\"content_block_stop\",\"index\":0}\n\n" +
+                "event: content_block_start\n" +
+                "data: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"text\",\"text\":\"\"}}\n\n" +
+                "event: content_block_delta\n" +
+                "data: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"Hello\"}}\n\n" +
+                "event: content_block_stop\n" +
+                "data: {\"type\":\"content_block_stop\",\"index\":1}\n\n" +
+                "event: message_delta\n" +
+                "data: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\"},\"usage\":{\"output_tokens\":5}}\n\n" +
+                "event: message_stop\n" +
+                "data: {\"type\":\"message_stop\"}\n\n";
+
+            var handler = new FakeHttpHandler { Responder = req => sse };
+            var provider = new AnthropicProvider(new AnthropicOptions { ApiKey = "sk-ant", Model = "claude-test" }, new HttpClient(handler));
+            var progress = new SyncProgress<ChatStreamDelta>();
+
+            var reply = await provider.ChatStreamingAsync(
+                new List<ChatMessageData> { new ChatMessageData { Role = "user", Content = "hello" } },
+                "system",
+                progress);
+
+            Assert.That(reply.Reasoning, Is.EqualTo("think"));
+            Assert.That(reply.Answer, Is.EqualTo("Hello"));
+
+            var events = Assemble(progress.Reported);
+            var reasoningClosed = events.Find(e => e.Kind == ChatStreamSegmentKind.Reasoning && e.Event == ChatStreamSegmentEventKind.Closed);
+            var contentClosed = events.Find(e => e.Kind == ChatStreamSegmentKind.Content && e.Event == ChatStreamSegmentEventKind.Closed);
+            Assert.That(reasoningClosed, Is.Not.Null);
+            Assert.That(reasoningClosed.Text, Is.EqualTo("think"));
+            Assert.That(contentClosed, Is.Not.Null);
+            Assert.That(contentClosed.Text, Is.EqualTo("Hello"));
+        }
+
+        [Test]
+        public async Task AnthropicStreaming_TwoThinkingBlocks_ProduceDistinctSegments()
+        {
+            var sse =
+                "event: message_start\n" +
+                "data: {\"type\":\"message_start\",\"message\":{\"usage\":{\"input_tokens\":10,\"cache_read_input_tokens\":2}}}\n\n" +
+                "event: content_block_start\n" +
+                "data: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\"}}\n\n" +
+                "event: content_block_delta\n" +
+                "data: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"a\"}}\n\n" +
+                "event: content_block_stop\n" +
+                "data: {\"type\":\"content_block_stop\",\"index\":0}\n\n" +
+                "event: content_block_start\n" +
+                "data: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\"}}\n\n" +
+                "event: content_block_delta\n" +
+                "data: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"b\"}}\n\n" +
+                "event: content_block_stop\n" +
+                "data: {\"type\":\"content_block_stop\",\"index\":1}\n\n" +
+                "event: message_delta\n" +
+                "data: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\"},\"usage\":{\"output_tokens\":5}}\n\n" +
+                "event: message_stop\n" +
+                "data: {\"type\":\"message_stop\"}\n\n";
+
+            var handler = new FakeHttpHandler { Responder = req => sse };
+            var provider = new AnthropicProvider(new AnthropicOptions { ApiKey = "sk-ant", Model = "claude-test" }, new HttpClient(handler));
+            var progress = new SyncProgress<ChatStreamDelta>();
+
+            await provider.ChatStreamingAsync(
+                new List<ChatMessageData> { new ChatMessageData { Role = "user", Content = "hello" } },
+                "system",
+                progress);
+
+            var events = Assemble(progress.Reported);
+            var ids = new List<string>();
+            foreach (var e in events)
+                if (e.Kind == ChatStreamSegmentKind.Reasoning && e.Event == ChatStreamSegmentEventKind.Opened)
+                    ids.Add(e.SegmentId);
+
+            Assert.That(ids.Count, Is.EqualTo(2));
+            Assert.That(ids[0], Is.Not.EqualTo(ids[1]));
+        }
+
+        [Test]
+        public async Task OpenAiStreaming_EmitsReasoningThenContentPhases()
+        {
+            var sse =
+                "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"think\"}}]}\n\n" +
+                "data: {\"choices\":[{\"delta\":{\"content\":\"answer\"}}]}\n\n" +
+                "data: [DONE]\n\n";
+
+            var handler = new FakeHttpHandler { Responder = req => sse };
+            var provider = new OpenAiCompatibleProvider(new OpenAiOptions { ApiKey = "sk-test", Model = "test-model" }, new HttpClient(handler));
+            var progress = new SyncProgress<ChatStreamDelta>();
+
+            var reply = await provider.ChatStreamingAsync(
+                new List<ChatMessageData> { new ChatMessageData { Role = "user", Content = "hi" } },
+                "system",
+                progress);
+
+            Assert.That(reply.Reasoning, Is.EqualTo("think"));
+            Assert.That(reply.Answer, Is.EqualTo("answer"));
+
+            var events = Assemble(progress.Reported);
+            var reasoningClosed = events.Find(e => e.Kind == ChatStreamSegmentKind.Reasoning && e.Event == ChatStreamSegmentEventKind.Closed);
+            var contentClosed = events.Find(e => e.Kind == ChatStreamSegmentKind.Content && e.Event == ChatStreamSegmentEventKind.Closed);
+            Assert.That(reasoningClosed, Is.Not.Null);
+            Assert.That(reasoningClosed.Text, Is.EqualTo("think"));
+            Assert.That(contentClosed, Is.Not.Null);
+            Assert.That(contentClosed.Text, Is.EqualTo("answer"));
+        }
+
+        [Test]
+        public async Task OpenAiStreaming_NonSseFallback_EmitsBeginDeltaEnd()
+        {
+            var handler = new FakeHttpHandler
+            {
+                Responder = req =>
+                    "{\"choices\":[{\"message\":{\"content\":\"Answer\",\"reasoning_content\":\"Reasoning\"}}]," +
+                    "\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5,\"total_tokens\":15}}"
+            };
+            var provider = new OpenAiCompatibleProvider(new OpenAiOptions { ApiKey = "sk-test", Model = "test-model" }, new HttpClient(handler));
+            var progress = new SyncProgress<ChatStreamDelta>();
+
+            var reply = await provider.ChatStreamingAsync(
+                new List<ChatMessageData> { new ChatMessageData { Role = "user", Content = "hi" } },
+                "system",
+                progress);
+
+            Assert.That(reply.Reasoning, Is.EqualTo("Reasoning"));
+            Assert.That(reply.Answer, Is.EqualTo("Answer"));
+
+            var events = Assemble(progress.Reported);
+            var reasoningClosed = events.Find(e => e.Kind == ChatStreamSegmentKind.Reasoning && e.Event == ChatStreamSegmentEventKind.Closed);
+            var contentClosed = events.Find(e => e.Kind == ChatStreamSegmentKind.Content && e.Event == ChatStreamSegmentEventKind.Closed);
+            Assert.That(reasoningClosed, Is.Not.Null);
+            Assert.That(reasoningClosed.Text, Is.EqualTo("Reasoning"));
+            Assert.That(contentClosed, Is.Not.Null);
+            Assert.That(contentClosed.Text, Is.EqualTo("Answer"));
+        }
     }
 }

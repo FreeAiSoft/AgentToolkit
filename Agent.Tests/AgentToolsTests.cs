@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -363,14 +364,59 @@ namespace Agent.Tests
 
             Assert.That(result.FinalText, Is.EqualTo("done"));
 
-            var reasoningParts = new List<string>();
+            var assembler = new ChatStreamAssembler();
+            var segments = new List<ChatStreamSegmentEventArgs>();
+            assembler.SegmentChanged += (s, e) => segments.Add(e);
             foreach (var d in progress.Reported)
-                if (!string.IsNullOrEmpty(d.ReasoningDelta))
-                    reasoningParts.Add(d.ReasoningDelta);
-            var reasoning = string.Join("", reasoningParts);
+                assembler.OnDelta(d);
 
-            Assert.That(reasoning, Does.Contain("turn-one"));
-            Assert.That(reasoning, Does.Contain("turn-two"));
+            var reasoningClosed = segments
+                .Where(e => e.Kind == ChatStreamSegmentKind.Reasoning && e.Event == ChatStreamSegmentEventKind.Closed)
+                .ToList();
+
+            Assert.That(reasoningClosed.Count, Is.EqualTo(2));
+            Assert.That(reasoningClosed[0].Text, Is.EqualTo("turn-one"));
+            Assert.That(reasoningClosed[1].Text, Is.EqualTo("turn-two"));
+        }
+
+        [Test]
+        public async Task RunAsync_ToolBetweenTurns_StreamsSeparateReasoningSegments()
+        {
+            var registry = new AgentToolRegistry();
+            registry.Register(new AgentTool("my_tool", "test tool", "{}", mutates: false, (a, c) => Task.FromResult("tool-result")));
+
+            string Sse(string reasoning, string content) =>
+                "data: {\"choices\":[{\"delta\":{\"reasoning_content\":" + System.Text.Json.JsonSerializer.Serialize(reasoning) + "}}]}\n\n" +
+                "data: {\"choices\":[{\"delta\":{\"content\":" + System.Text.Json.JsonSerializer.Serialize(content) + "}}]}\n\n" +
+                "data: [DONE]\n\n";
+
+            var responses = new Queue<string>();
+            responses.Enqueue(Sse("before-tool", "{\"action\":\"tool_call\",\"tool\":\"my_tool\",\"arguments\":{}}"));
+            responses.Enqueue(Sse("after-tool", "{\"action\":\"final\",\"text\":\"done\"}"));
+
+            var handler = new FakeHttpHandler { Responder = req => responses.Dequeue() };
+            var provider = new OpenAiCompatibleProvider(new OpenAiOptions { ApiKey = "sk-test", Model = "test-model" }, new HttpClient(handler));
+
+            var runner = new AgentRunner(provider, registry, mode => "SYSTEM", maxIterations: 4);
+
+            var progress = new SyncProgress<ChatStreamDelta>();
+            var result = await runner.RunAsync("go", AgentMode.Act, CancellationToken.None, progress);
+
+            Assert.That(result.FinalText, Is.EqualTo("done"));
+
+            var assembler = new ChatStreamAssembler();
+            var segments = new List<ChatStreamSegmentEventArgs>();
+            assembler.SegmentChanged += (s, e) => segments.Add(e);
+            foreach (var d in progress.Reported)
+                assembler.OnDelta(d);
+
+            var reasoningClosed = segments
+                .Where(e => e.Kind == ChatStreamSegmentKind.Reasoning && e.Event == ChatStreamSegmentEventKind.Closed)
+                .ToList();
+
+            Assert.That(reasoningClosed.Count, Is.EqualTo(2));
+            Assert.That(reasoningClosed[0].Text, Is.EqualTo("before-tool"));
+            Assert.That(reasoningClosed[1].Text, Is.EqualTo("after-tool"));
         }
 
         [Test]
