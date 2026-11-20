@@ -47,6 +47,12 @@ namespace Agent.Models
         private ChatViewMode _viewMode = ChatViewMode.Conversation;
         private ChatMessage _pinnedMessage;
         private AgentMode _mode = AgentMode.Plan;
+
+        /// <summary>
+        /// Mode of the previously completed provider request (diagnostic only). Compared against
+        /// <see cref="Mode"/> when a cache-hit drop is explained; updated by <see cref="RecordTokenUsage"/>.
+        /// </summary>
+        private AgentMode _lastRequestMode = AgentMode.Plan;
         private AgentPhase _phase = AgentPhase.Idle;
         private bool _hasResumableRun;
         private bool _suppressModeSwitch;
@@ -461,6 +467,9 @@ namespace Agent.Models
         /// </summary>
         public async Task DoItCommand(string inputText)
         {
+            _logger.Info(
+                "[cache-diag] do-it: mode=" + AgentModeNames.ToValue(_mode) +
+                "->Act, hasInput=" + !string.IsNullOrWhiteSpace(inputText));
             SwitchMode(AgentMode.Act);
 
             if (_chatSink == null)
@@ -1131,6 +1140,14 @@ namespace Agent.Models
         public double CacheLossDropRatioPercent { get; set; } = 0;
 
         /// <summary>
+        /// Diagnostic flag set by the host right before sending: true when the transcript that is
+        /// about to be sent ended with an unanswered user message (a cancelled turn). Read by
+        /// <see cref="RecordTokenUsage"/> only to explain a cache-hit drop; it never changes chat
+        /// behaviour. Runtime-only and not persisted.
+        /// </summary>
+        public bool HasOrphanedUserInTranscript { get; set; }
+
+        /// <summary>
         /// Adds a single request's token usage to the active conversation. No-op while the chat is
         /// closed. This is the single accumulation point, so a future persistence step only has to
         /// mark the conversation dirty here.
@@ -1152,8 +1169,29 @@ namespace Agent.Models
 
             conversation.AccumulateUsage(usage);
 
+            // Diagnostic-only explanation of a cache-hit drop. The mode of the previous completed
+            // request (not the current mode toggle) is the right comparison, so it is tracked
+            // separately and updated below after the line has been emitted.
+            var cause = CacheLossCauseClassifier.Classify(
+                _lastRequestMode,
+                Mode,
+                HasOrphanedUserInTranscript,
+                conversation.PreviousCacheHitTokens,
+                usage.CacheHitTokens,
+                usage.PromptTokens);
+
+            _logger.Info(
+                "[cache-diag] usage: mode=" + AgentModeNames.ToValue(Mode) +
+                ", prevMode=" + AgentModeNames.ToValue(_lastRequestMode) +
+                ", prevHit=" + Math.Max(0, conversation.PreviousCacheHitTokens) +
+                ", curHit=" + Math.Max(0, usage.CacheHitTokens) +
+                ", curPrompt=" + Math.Max(0, usage.PromptTokens) +
+                ", orphanedUser=" + HasOrphanedUserInTranscript +
+                ", cause=" + cause.Kind + " (" + cause.Message + ")");
+
             conversation.PreviousCacheHitTokens = Math.Max(0, usage.CacheHitTokens);
             conversation.PreviousPromptTokens = Math.Max(0, usage.PromptTokens);
+            _lastRequestMode = Mode;
 
             if (loss != null)
             {
