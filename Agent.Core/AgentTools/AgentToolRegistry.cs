@@ -29,6 +29,25 @@ namespace Agent.Core.AgentTools
             _disabled.Add(name.Trim());
         }
 
+        /// <summary>
+        /// Returns a copy of this registry without the named tool (case-insensitive). Used to
+        /// build sub-agent registries that must not expose interactive tools (e.g. ask_question).
+        /// Disabled flags are preserved so the copy behaves exactly like the source otherwise.
+        /// </summary>
+        public AgentToolRegistry Without(string toolName)
+        {
+            var copy = new AgentToolRegistry();
+            foreach (var pair in _tools)
+            {
+                if (string.Equals(pair.Value.Name, toolName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                copy._tools[pair.Key] = pair.Value;
+            }
+            foreach (var name in _disabled)
+                copy._disabled.Add(name);
+            return copy;
+        }
+
         public IAgentTool Find(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) return null;

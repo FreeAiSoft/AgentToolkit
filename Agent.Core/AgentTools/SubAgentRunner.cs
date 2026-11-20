@@ -33,6 +33,10 @@ namespace Agent.Core.AgentTools
 
             var trimmedInstructions = (instructions ?? string.Empty).Trim();
             var effectiveBudget = budget ?? new ContextBudget();
+            // Sub-agents must not interact with the user, so remove ask_question from the
+            // tools the nested loop may invoke. The caller-provided system prompt factory
+            // is still used verbatim; this copy only guards the executable tool set.
+            var subRegistry = registry.Without("ask_question");
 
             string SubPrompt(AgentMode m)
             {
@@ -44,7 +48,7 @@ namespace Agent.Core.AgentTools
 
             var runner = new AgentRunner(
                 ai,
-                registry,
+                subRegistry,
                 SubPrompt,
                 effectiveBudget,
                 toolCallingMode: toolCallingMode,

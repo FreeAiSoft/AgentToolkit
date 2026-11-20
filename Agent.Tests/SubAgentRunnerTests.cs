@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Agent.Core.AgentTools;
@@ -89,6 +90,35 @@ namespace Agent.Tests
 
             Assert.That(registry.ForMode(AgentMode.Act, AgentPermissions.ReadFiles).Count, Is.EqualTo(0));
             Assert.That(registry.ForMode(AgentMode.Act, AgentPermissions.Subagents).Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task RunAsync_ExcludesAskQuestionFromSubAgentTools()
+        {
+            var handler = new FakeHttpHandler { Responder = req => Completion("done") };
+            var provider = new OpenAiCompatibleProvider(new OpenAiOptions
+            {
+                ApiKey = "sk-test",
+                Model = "m",
+                ToolCallingMode = ToolCallingMode.Native
+            }, new HttpClient(handler));
+
+            var registry = new AgentToolRegistry();
+            registry.Register(new AgentTool("ask_question", "Ask", "{}", mutates: false, (a, c) => Task.FromResult("q")));
+            registry.Register(new AgentTool("read_file", "Read", "{}", mutates: false, (a, c) => Task.FromResult("r")));
+
+            await SubAgentRunner.RunAsync(
+                provider, registry, AgentMode.Act, ToolCallingMode.Native, AgentPermissions.All,
+                new ContextBudget { MaxIterations = 4 },
+                m => "BASE",
+                "",
+                "task",
+                CancellationToken.None);
+
+            var body = JObject.Parse(handler.LastBody);
+            var names = ((JArray)body["tools"]).Select(t => t["function"]["name"].Value<string>()).ToList();
+            Assert.That(names, Does.Not.Contain("ask_question"));
+            Assert.That(names, Does.Contain("read_file"));
         }
     }
 }
