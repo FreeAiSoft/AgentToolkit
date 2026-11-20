@@ -74,7 +74,7 @@ namespace Agent.Models
         private string _speechToTextLanguage = "ru";
         private string _voskModelPath = "";
         private bool _speechAutoSend = false;
-        private bool _autoCaptureRuntimeExceptions = true;
+        private bool _autoCaptureRuntimeExceptions = false;
         private bool _checkpointsEnabled = true;
         private bool _roslynSemanticsEnabled = true;
         private bool _filterBuildTestOutput = true;

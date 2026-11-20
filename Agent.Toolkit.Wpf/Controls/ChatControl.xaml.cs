@@ -46,6 +46,7 @@ namespace Agent.Toolkit.Wpf.Controls
             InitializeComponent();
             AgentThemeManager.EnsureInitialized();
             DataContextChanged += OnDataContextChanged;
+            ChatMessages.CopyMessageRequested += OnCopyMessageRequested;
         }
 
         /// <summary>Host seam: agent loop, commit, build errors, robot creation, workspace scoping.</summary>
@@ -686,6 +687,13 @@ namespace Agent.Toolkit.Wpf.Controls
             ChatContextIndicator.ShowDetails = _pinnedExpanded;
         }
 
+        private void OnCopyMessageRequested(object sender, ChatMessage message)
+        {
+            if (message == null) return;
+            try { Clipboard.SetText(FormatMessageForCopy(message)); }
+            catch { /* clipboard busy — ignore */ }
+        }
+
         private void OnCopyPinnedMessage(object sender, RoutedEventArgs e)
         {
             if (Model?.PinnedMessage == null) return;
@@ -708,17 +716,7 @@ namespace Agent.Toolkit.Wpf.Controls
         }
 
         private static string FormatMessageForCopy(ChatMessage message)
-        {
-            var sb = new StringBuilder();
-            sb.Append(message.DisplayText);
-            if (!string.IsNullOrWhiteSpace(message.Reasoning))
-            {
-                sb.AppendLine();
-                sb.AppendLine("[Reasoning]");
-                sb.Append(message.Reasoning);
-            }
-            return sb.ToString();
-        }
+            => ChatMessageCopyFormatter.Format(message);
 
         // ------------------------------------------------------------------
         // Mic

@@ -190,7 +190,7 @@ namespace Agent.Core.Services
         public bool SpeechAutoSend { get; set; } = false;
 
         /// <summary>Automatically send runtime exceptions that break the debugger to the agent chat.</summary>
-        public bool AutoCaptureRuntimeExceptions { get; set; } = true;
+        public bool AutoCaptureRuntimeExceptions { get; set; } = false;
 
         /// <summary>Automatically snapshot workspace files into a shadow git repository per iteration (checkpoints).</summary>
         public bool CheckpointsEnabled { get; set; } = true;

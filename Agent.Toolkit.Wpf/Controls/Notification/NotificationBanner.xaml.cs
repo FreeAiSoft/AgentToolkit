@@ -3,12 +3,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Agent.Core.Services;
 
 namespace Agent.Toolkit.Wpf.Controls
 {
     /// <summary>
     /// Reusable notification banner matching the Controls -> Notifications template:
-    /// transparent background, a 1px accent border and accent-colored text. The
+    /// a semi-transparent accent-colored background without a border. The
     /// <see cref="Kind"/> selects the accent color and which action buttons are shown;
     /// Warning/Error additionally expose Copy and Send-to-chat, every level exposes Close.
     /// </summary>
@@ -30,7 +31,11 @@ namespace Agent.Toolkit.Wpf.Controls
 
         public static readonly DependencyProperty AccentBrushProperty = DependencyProperty.Register(
             nameof(AccentBrush), typeof(Brush), typeof(NotificationBanner),
-            new PropertyMetadata(InfoBrush));
+            new PropertyMetadata(InfoBrush, OnAccentBrushChanged));
+
+        public static readonly DependencyProperty AccentBackgroundBrushProperty = DependencyProperty.Register(
+            nameof(AccentBackgroundBrush), typeof(Brush), typeof(NotificationBanner),
+            new PropertyMetadata(CreateAccentBackground(InfoBrush)));
 
         public static readonly DependencyProperty ShowCopyProperty = DependencyProperty.Register(
             nameof(ShowCopy), typeof(bool), typeof(NotificationBanner), new PropertyMetadata(false));
@@ -71,11 +76,18 @@ namespace Agent.Toolkit.Wpf.Controls
             set => SetValue(MessageProperty, value);
         }
 
-        /// <summary>Accent color used for the border and text; derived from <see cref="Kind"/>.</summary>
+        /// <summary>Accent color derived from <see cref="Kind"/>; drives the background tint.</summary>
         public Brush AccentBrush
         {
             get => (Brush)GetValue(AccentBrushProperty);
             set => SetValue(AccentBrushProperty, value);
+        }
+
+        /// <summary>Semi-transparent version of <see cref="AccentBrush"/> used as the banner background.</summary>
+        public Brush AccentBackgroundBrush
+        {
+            get => (Brush)GetValue(AccentBackgroundBrushProperty);
+            set => SetValue(AccentBackgroundBrushProperty, value);
         }
 
         public bool ShowCopy
@@ -200,6 +212,20 @@ namespace Agent.Toolkit.Wpf.Controls
                     ShowClose = true;
                     break;
             }
+        }
+
+        private static void OnAccentBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var banner = (NotificationBanner)d;
+            banner.AccentBackgroundBrush = CreateAccentBackground((Brush)e.NewValue);
+        }
+
+        private static Brush CreateAccentBackground(Brush accent)
+        {
+            var background = accent is SolidColorBrush solid
+                ? AccentBackgroundCalculator.FromColor(solid.Color.R, solid.Color.G, solid.Color.B)
+                : AccentBackgroundCalculator.Fallback();
+            return Freeze(new SolidColorBrush(Color.FromArgb(background.A, background.R, background.G, background.B)));
         }
 
         private static Brush Freeze(Brush brush)

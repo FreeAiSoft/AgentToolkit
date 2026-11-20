@@ -31,9 +31,7 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-    <Border Background="{DynamicResource Theme.Panel}"
-            BorderBrush="{Binding AccentBrush, ElementName=Root}"
-            BorderThickness="1"
+    <Border Background="{Binding AccentBackgroundBrush, ElementName=Root}"
             CornerRadius="2"
             Padding="10,8">
         <Grid>
