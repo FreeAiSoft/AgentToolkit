@@ -242,5 +242,22 @@ namespace Agent.Tests
             Assert.That(title, Does.StartWith(new string('x', ChatMessageMapper.TitleMaxLength)));
             Assert.That(title, Does.EndWith("…"));
         }
+        [Test]
+        public void ToolCall_RuntimeIsExecuting_IsNotPersisted()
+        {
+            var message = new ChatMessage
+            {
+                Kind = ChatMessageKind.ToolCall,
+                IsExecuting = true,
+                Payload = new ToolCallPayload { ToolName = "read_file", Result = "content", Blocked = false },
+                TimestampUtc = Stamp
+            };
+
+            var stored = ChatMessageMapper.ToHistoryMessage(message);
+            var restored = ChatMessageMapper.FromHistoryMessage(stored);
+
+            Assert.That(restored.IsExecuting, Is.False);
+        }
+
     }
 }

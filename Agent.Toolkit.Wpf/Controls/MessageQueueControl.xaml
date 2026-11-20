@@ -53,11 +53,47 @@
                                 <ColumnDefinition Width="Auto"/> <!-- delete -->
                             </Grid.ColumnDefinitions>
 
-                            <Button Grid.Column="0" ToolTip="Send to agent now (steer)"
+                            <Button Grid.Column="0" ToolTip="{Binding DeliveryToolTip}"
                                     Style="{StaticResource IconButtonStyle}" Width="22" Height="22"
                                     Margin="0,0,4,0" Click="OnSteer" IsEnabled="{Binding CanSteer}">
-                                <Path Data="{Binding Source={x:Static mi:MaterialIconKind.FastForward}, Converter={StaticResource MaterialIconToGeometry}}"
-                                      Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="12" Height="12"/>
+                                <Grid>
+                                    <Path Data="{Binding Delivery, Converter={StaticResource PendingDeliveryToGeometry}}"
+                                          Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="12" Height="12"/>
+                                    <Path Data="{Binding Delivery, Converter={StaticResource PendingDeliveryToGeometry}}"
+                                          Stretch="Uniform" Width="12" Height="12">
+                                        <Path.Fill>
+                                            <LinearGradientBrush MappingMode="RelativeToBoundingBox" SpreadMethod="Repeat"
+                                                                 StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="{DynamicResource Theme.SteerShimmerLow}" Offset="0"/>
+                                                <GradientStop Color="{DynamicResource Theme.SteerShimmerHigh}" Offset="0.5"/>
+                                                <GradientStop Color="{DynamicResource Theme.SteerShimmerLow}" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Path.Fill>
+                                        <Path.Style>
+                                            <Style TargetType="Path">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSteered}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <DataTrigger.EnterActions>
+                                                            <BeginStoryboard Name="SteerShimmer">
+                                                                <Storyboard RepeatBehavior="Forever">
+                                                                    <PointAnimation Storyboard.TargetProperty="Fill.(LinearGradientBrush.StartPoint)"
+                                                                                    From="0,0" To="1,0" Duration="0:0:1.2"/>
+                                                                    <PointAnimation Storyboard.TargetProperty="Fill.(LinearGradientBrush.EndPoint)"
+                                                                                    From="1,0" To="2,0" Duration="0:0:1.2"/>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </DataTrigger.EnterActions>
+                                                        <DataTrigger.ExitActions>
+                                                            <StopStoryboard BeginStoryboardName="SteerShimmer"/>
+                                                        </DataTrigger.ExitActions>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                </Grid>
                             </Button>
 
                             <TextBox Grid.Column="1" Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

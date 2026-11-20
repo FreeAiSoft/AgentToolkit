@@ -44,6 +44,39 @@
         </Setter>
     </Style>
 
+    <!-- Same hover/press behavior as IconButtonStyle, but for the ToggleButton used by the
+         per-card "more actions" menu in the history view. -->
+    <Style x:Key="IconToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.7"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.3"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Stealth option buttons for the question control: theme text, transparent
          background and a barely visible hover so the options don't pop sharply. -->
     <Style x:Key="Question.OptionButtonStyle" TargetType="Button">
@@ -153,6 +186,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
+                                <Ellipse x:Name="ExecutingDot" Grid.Column="0" Width="6" Height="6" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-7,0,0,0" RenderTransformOrigin="0.5,0.5" Opacity="0" Fill="{DynamicResource Theme.ActiveDot}" Visibility="Collapsed" ToolTip="Command running"/>
                                 <Button x:Name="ToggleButton" Grid.Column="0" Width="18" Height="18"
                                         VerticalAlignment="Center" ToolTip="Expand/collapse message">
                                     <Button.Style>
@@ -211,7 +245,7 @@
                                                 <DataTrigger Binding="{Binding KindName}" Value="Subagent">
                                                     <Setter Property="Visibility" Value="Visible"/>
                                                 </DataTrigger>
-                                                <!-- The header title duplicates the body's first line for User/SystemNotice/Error/Subagent;
+                                                <!-- The header title duplicates the body's first line for User/SystemNotice/Error;
                                                      hide it while the card is expanded so the text is not shown twice. -->
                                                 <MultiDataTrigger>
                                                     <MultiDataTrigger.Conditions>
@@ -234,13 +268,6 @@
                                                     </MultiDataTrigger.Conditions>
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                 </MultiDataTrigger>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding KindName}" Value="Subagent"/>
-                                                        <Condition Binding="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
-                                                    </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </MultiDataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </TextBlock.Style>
@@ -255,7 +282,7 @@
                                           Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="12" Height="12"/>
                                 </Button>
                             </Grid>
-                            <ContentPresenter x:Name="Body" Grid.Row="1" Margin="0,6,0,0"
+                            <ContentPresenter x:Name="Body" Grid.Row="1" Margin="0,5,0,0"
                                               Content="{TemplateBinding Content}">
                                 <ContentPresenter.Style>
                                     <Style TargetType="ContentPresenter">

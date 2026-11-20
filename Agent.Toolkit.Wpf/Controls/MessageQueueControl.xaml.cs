@@ -109,7 +109,15 @@ namespace Agent.Toolkit.Wpf.Controls
         {
             var item = ItemOf(sender);
             if (item == null) return;
-            SteerRequested?.Invoke(item);
+            if (item.Delivery == PendingDelivery.Steer)
+            {
+                item.Delivery = PendingDelivery.Queue;
+            }
+            else
+            {
+                item.Delivery = PendingDelivery.Steer;
+                SteerRequested?.Invoke(item);
+            }
         }
 
         private void OnClearAll(object sender, RoutedEventArgs e)

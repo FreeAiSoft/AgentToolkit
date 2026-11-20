@@ -50,9 +50,13 @@ namespace Agent.Core.Models
                     _delivery = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(DeliveryToolTip));
+                    OnPropertyChanged(nameof(IsSteered));
                 }
             }
         }
+
+        /// <summary>True when the queued message is steered (jumps the queue).</summary>
+        public bool IsSteered => Delivery == PendingDelivery.Steer;
 
         public string Preview => string.IsNullOrWhiteSpace(Text)
             ? "(attachments only)"

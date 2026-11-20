@@ -56,6 +56,7 @@
         <Setter Property="CaretBrush" Value="{DynamicResource Theme.Text}"/>
         <Setter Property="SelectionBrush" Value="{DynamicResource Theme.Accent}"/>
         <Setter Property="Padding" Value="6,4"/>
+        <Setter Property="MinHeight" Value="29"/>
     </Style>
 
     <Style TargetType="PasswordBox">
@@ -66,6 +67,7 @@
         <Setter Property="CaretBrush" Value="{DynamicResource Theme.Text}"/>
         <Setter Property="SelectionBrush" Value="{DynamicResource Theme.Accent}"/>
         <Setter Property="Padding" Value="6,4"/>
+        <Setter Property="MinHeight" Value="29"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
 
@@ -168,7 +170,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="6,4"/>
-        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="MinHeight" Value="29"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -290,7 +292,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="6,4"/>
-        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="MinHeight" Value="29"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -370,6 +372,7 @@
                         <TextBox x:Name="PART_EditableTextBox"
                                  Grid.Column="0"
                                  Margin="{TemplateBinding Padding}"
+                                 MinHeight="0"
                                  Background="Transparent"
                                  Foreground="{TemplateBinding Foreground}"
                                  CaretBrush="{TemplateBinding Foreground}"

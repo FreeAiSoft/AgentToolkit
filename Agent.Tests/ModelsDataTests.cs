@@ -120,6 +120,55 @@ namespace Agent.Tests
 
             Assert.That(message.SingleLineDisplayText, Is.EqualTo("a b"));
         }
+        [Test]
+        public void IsExecuting_DefaultsFalse()
+        {
+            Assert.That(new ChatMessage().IsExecuting, Is.False);
+        }
+
+        [Test]
+        public void IsExecuting_RaisesPropertyChanged_OnChange_NotOnSameValue()
+        {
+            var message = new ChatMessage();
+            var names = new List<string>();
+            message.PropertyChanged += (s, e) => names.Add(e.PropertyName);
+
+            message.IsExecuting = true;
+            message.IsExecuting = true;
+            message.IsExecuting = false;
+
+            Assert.That(names.FindAll(n => n == nameof(ChatMessage.IsExecuting)), Has.Count.EqualTo(2));
+        }
+
+        [Test]
+        public void SetToolResult_UpdatesResultAndNotifiesToolBodyBlocks()
+        {
+            var message = new ChatMessage
+            {
+                Kind = ChatMessageKind.ToolCall,
+                Payload = new ToolCallPayload { ToolName = "build" }
+            };
+            var names = new List<string>();
+            message.PropertyChanged += (s, e) => names.Add(e.PropertyName);
+
+            message.SetToolResult("ok");
+
+            Assert.That(((ToolCallPayload)message.Payload).Result, Is.EqualTo("ok"));
+            Assert.That(message.ToolBodyText, Is.EqualTo("ok"));
+            Assert.That(message.ToolBodyBlocks, Is.Not.Empty);
+            Assert.That(names, Does.Contain(nameof(ChatMessage.ToolBodyText)));
+            Assert.That(names, Does.Contain(nameof(ChatMessage.ToolBodyBlocks)));
+        }
+
+        [Test]
+        public void SetToolResult_NoToolPayload_DoesNotThrow()
+        {
+            var message = new ChatMessage { Kind = ChatMessageKind.SystemNotice, Text = "x" };
+
+            Assert.DoesNotThrow(() => message.SetToolResult("ok"));
+            Assert.That(message.Text, Is.EqualTo("x"));
+        }
+
     }
 
     [TestFixture]
@@ -245,9 +294,11 @@ namespace Agent.Tests
             var pending = new PendingMessage { Delivery = PendingDelivery.Steer };
 
             Assert.That(pending.DeliveryToolTip, Does.Contain("Steer"));
+            Assert.That(pending.IsSteered, Is.True);
 
             pending.Delivery = PendingDelivery.Queue;
             Assert.That(pending.DeliveryToolTip, Does.Contain("Queue"));
+            Assert.That(pending.IsSteered, Is.False);
         }
     }
 

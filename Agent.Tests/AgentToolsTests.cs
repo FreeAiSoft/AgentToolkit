@@ -529,6 +529,113 @@ namespace Agent.Tests
 
             Assert.That(result.FinalText, Is.EqualTo("готово"));
         }
+        [Test]
+        public async Task RunAsync_ExecutedTool_RaisesStartedBeforeExecuted()
+        {
+            var registry = new AgentToolRegistry();
+            registry.Register(new AgentTool("my_tool", "test tool", "{}", mutates: false, (a, c) => Task.FromResult("tool-result")));
+
+            var responses = new Queue<string>();
+            responses.Enqueue(Completion("{\"action\":\"tool_call\",\"tool\":\"my_tool\",\"arguments\":{}}"));
+            responses.Enqueue(Completion("{\"action\":\"final\",\"text\":\"done\"}"));
+
+            var handler = new FakeHttpHandler { Responder = req => responses.Dequeue() };
+            var provider = new OpenAiCompatibleProvider(new OpenAiOptions { ApiKey = "sk-test" }, new HttpClient(handler));
+
+            var runner = new AgentRunner(provider, registry, mode => "SYSTEM", maxIterations: 4);
+
+            var events = new List<string>();
+            EventHandler<AgentToolCall> onStarted = (s, e) => { if (e.ToolName == "my_tool") events.Add("started"); };
+            EventHandler<AgentToolCall> onExecuted = (s, e) => { if (e.ToolName == "my_tool") events.Add("executed"); };
+            ToolExecutionBus.Started += onStarted;
+            ToolExecutionBus.Executed += onExecuted;
+
+            try
+            {
+                await runner.RunAsync("go", AgentMode.Act, CancellationToken.None);
+            }
+            finally
+            {
+                ToolExecutionBus.Started -= onStarted;
+                ToolExecutionBus.Executed -= onExecuted;
+            }
+
+            Assert.That(events, Is.EqualTo(new[] { "started", "executed" }));
+        }
+
+        [Test]
+        public async Task RunAsync_BlockedTool_RaisesExecuted_NotStarted()
+        {
+            var registry = new AgentToolRegistry();
+            registry.Register(new AgentTool("write_file", "write", "{}", mutates: true, (a, c) => Task.FromResult("should-not-run")));
+
+            var responses = new Queue<string>();
+            responses.Enqueue(Completion("{\"action\":\"tool_call\",\"tool\":\"write_file\",\"arguments\":{}}"));
+            responses.Enqueue(Completion("{\"action\":\"final\",\"text\":\"done\"}"));
+
+            var handler = new FakeHttpHandler { Responder = req => responses.Dequeue() };
+            var provider = new OpenAiCompatibleProvider(new OpenAiOptions { ApiKey = "sk-test" }, new HttpClient(handler));
+
+            var runner = new AgentRunner(provider, registry, mode => "SYSTEM", maxIterations: 4);
+
+            var started = 0;
+            var executedBlocked = false;
+            EventHandler<AgentToolCall> onStarted = (s, e) => { if (e.ToolName == "write_file") started++; };
+            EventHandler<AgentToolCall> onExecuted = (s, e) => { if (e.ToolName == "write_file" && e.Blocked) executedBlocked = true; };
+            ToolExecutionBus.Started += onStarted;
+            ToolExecutionBus.Executed += onExecuted;
+
+            try
+            {
+                await runner.RunAsync("go", AgentMode.Plan, CancellationToken.None);
+            }
+            finally
+            {
+                ToolExecutionBus.Started -= onStarted;
+                ToolExecutionBus.Executed -= onExecuted;
+            }
+
+            Assert.That(started, Is.Zero);
+            Assert.That(executedBlocked, Is.True);
+        }
+
+        [Test]
+        public async Task RunAsync_RejectedTool_RaisesExecuted_NotStarted()
+        {
+            var registry = new AgentToolRegistry();
+            registry.Register(new AgentTool("run_command", "run", "{}", mutates: true, (a, c) => Task.FromResult("nope")));
+
+            var responses = new Queue<string>();
+            responses.Enqueue(Completion("{\"action\":\"tool_call\",\"tool\":\"run_command\",\"arguments\":{}}"));
+            responses.Enqueue(Completion("{\"action\":\"final\",\"text\":\"done\"}"));
+
+            var handler = new FakeHttpHandler { Responder = req => responses.Dequeue() };
+            var provider = new OpenAiCompatibleProvider(new OpenAiOptions { ApiKey = "sk-test" }, new HttpClient(handler));
+
+            ToolApprovalGate gate = (request, ct) => Task.FromResult(ToolApprovalDecision.Reject);
+            var runner = new AgentRunner(provider, registry, mode => "SYSTEM", maxIterations: 4, approvalGate: gate);
+
+            var started = 0;
+            var executedRejected = false;
+            EventHandler<AgentToolCall> onStarted = (s, e) => { if (e.ToolName == "run_command") started++; };
+            EventHandler<AgentToolCall> onExecuted = (s, e) => { if (e.ToolName == "run_command" && e.Rejected) executedRejected = true; };
+            ToolExecutionBus.Started += onStarted;
+            ToolExecutionBus.Executed += onExecuted;
+
+            try
+            {
+                await runner.RunAsync("go", AgentMode.Act, CancellationToken.None);
+            }
+            finally
+            {
+                ToolExecutionBus.Started -= onStarted;
+                ToolExecutionBus.Executed -= onExecuted;
+            }
+
+            Assert.That(started, Is.Zero);
+            Assert.That(executedRejected, Is.True);
+        }
+
     }
 
     [TestFixture]

@@ -19,6 +19,7 @@ namespace Agent.Core.Models
         private string _mode = "";
         private bool _isThinking;
         private bool _isPartial;
+        private bool _isExecuting;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -128,6 +129,13 @@ namespace Agent.Core.Models
             set { if (_isPartial != value) { _isPartial = value; OnPropertyChanged(); } }
         }
 
+        /// <summary>True while a tool call is executing; drives the blinking green dot in the chat card.</summary>
+        public bool IsExecuting
+        {
+            get => _isExecuting;
+            set { if (_isExecuting != value) { _isExecuting = value; OnPropertyChanged(); } }
+        }
+
         /// <summary>When this entry was created (UTC).</summary>
         public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
 
@@ -188,7 +196,7 @@ namespace Agent.Core.Models
         /// <summary>
         /// Text shown in the message header ("top" line): tool name for tool calls, the mode
         /// text for mode switches, the first message line for user/system notices and errors,
-        /// the sub-agent task for sub-agent cards, and a fixed "Reasoning" label for agent text;
+        /// the tool name for sub-agent cards, and a fixed "Reasoning" label for agent text;
         /// empty otherwise.
         /// </summary>
         public string MessageTitle
@@ -209,7 +217,7 @@ namespace Agent.Core.Models
                     case ChatMessageKind.Error:
                         return FirstLine(Text);
                     case ChatMessageKind.Subagent:
-                        return FirstLine((Payload as SubagentPayload)?.Item?.Prompt ?? "");
+                        return "spawn_agent";
                     case ChatMessageKind.Approval:
                         return (Payload as ApprovalPayload)?.ToolName ?? "";
                     default:
@@ -313,6 +321,25 @@ namespace Agent.Core.Models
 
         /// <summary>Tool call body split into text and code blocks (for syntax-highlighted rendering).</summary>
         public IReadOnlyList<MessageBlock> ToolBodyBlocks => ChatMarkdown.SplitBlocks(ToolBodyText);
+
+        /// <summary>
+        /// Updates the result of an already-rendered tool-call card in place.
+        /// <see cref="ToolCallPayload.Result"/> is a plain auto-property (no change notification),
+        /// so the derived display/body properties are re-raised explicitly for the UI to re-render
+        /// the card body.
+        /// </summary>
+        public void SetToolResult(string result)
+        {
+            if (Payload is ToolCallPayload toolCall)
+                toolCall.Result = result ?? "";
+
+            OnPropertyChanged(nameof(ToolBodyText));
+            OnPropertyChanged(nameof(ToolBodyBlocks));
+            OnPropertyChanged(nameof(DisplayText));
+            OnPropertyChanged(nameof(SingleLineDisplayText));
+            OnPropertyChanged(nameof(Blocks));
+            OnPropertyChanged(nameof(MessageTitle));
+        }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -40,6 +41,7 @@ namespace Agent.Toolkit.Wpf.Controls
         private readonly object _syncRoot = new object();
         private IMicrophoneRecorder _mic;
         private ISpeechToTextService _stt;
+        private ToolCallProgressTracker _toolTracker;
 
         public ChatControl()
         {
@@ -127,6 +129,8 @@ namespace Agent.Toolkit.Wpf.Controls
         {
             if (e.OldValue is ChatModel oldModel)
             {
+                _toolTracker?.Detach();
+                _toolTracker = null;
                 oldModel.PropertyChanged -= OnModelPropertyChanged;
                 oldModel.PromptCacheLost -= OnPromptCacheLost;
             }
@@ -137,6 +141,14 @@ namespace Agent.Toolkit.Wpf.Controls
 
             model.PropertyChanged += OnModelPropertyChanged;
             model.PromptCacheLost += OnPromptCacheLost;
+
+            // Tool-call cards are owned by the toolkit: the tracker listens to the tool
+            // lifecycle bus and creates/updates the running-indicator cards in the model.
+            _toolTracker?.Detach();
+            _toolTracker = new ToolCallProgressTracker(
+                () => model.Messages,
+                action => Dispatcher.BeginInvoke(action));
+            _toolTracker.Attach();
 
             // Share the model-owned collections with the list controls.
             ChatMessages.Messages = model.Messages;
@@ -613,6 +625,7 @@ namespace Agent.Toolkit.Wpf.Controls
 
         private void OnToggleImportant(object sender, RoutedEventArgs e)
         {
+            CloseHistoryCardMenu(sender);
             if (sender is FrameworkElement { DataContext: ChatConversation conversation }
                 && Model != null && !Model.ToggleImportant(conversation.Id))
             {
@@ -622,6 +635,7 @@ namespace Agent.Toolkit.Wpf.Controls
 
         private void OnDeleteHistoryCard(object sender, RoutedEventArgs e)
         {
+            CloseHistoryCardMenu(sender);
             if (!(sender is FrameworkElement { DataContext: ChatConversation conversation }))
                 return;
 
@@ -641,6 +655,23 @@ namespace Agent.Toolkit.Wpf.Controls
 
             if (deletedActive)
                 Host?.OnConversationRemoved();
+        }
+
+        private static void CloseHistoryCardMenu(object sender)
+        {
+            if (!(sender is DependencyObject element))
+                return;
+
+            var parent = LogicalTreeHelper.GetParent(element);
+            while (parent != null && !(parent is Popup))
+            {
+                parent = LogicalTreeHelper.GetParent(parent);
+            }
+
+            if (parent is Popup popup)
+            {
+                popup.IsOpen = false;
+            }
         }
 
         private void OnClearHistory(object sender, RoutedEventArgs e)

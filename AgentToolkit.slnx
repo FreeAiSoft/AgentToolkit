@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="agents.md" />
+  </Folder>
   <Project Path="Agent.Core/Agent.Core.csproj" />
   <Project Path="Agent.Models/Agent.Models.csproj" />
   <Project Path="Agent.Mvvm/Agent.Mvvm.csproj" />

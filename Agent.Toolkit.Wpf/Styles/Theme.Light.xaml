@@ -89,4 +89,8 @@
     <!-- Status shimmer gradient stops -->
     <Color x:Key="Theme.ShimmerLow">#6E6E6E</Color>
     <Color x:Key="Theme.ShimmerHigh">#1E1E1E</Color>
+
+    <!-- Queue steer shimmer gradient stops (amber) -->
+    <Color x:Key="Theme.SteerShimmerLow">#8A5000</Color>
+    <Color x:Key="Theme.SteerShimmerHigh">#FFB300</Color>
 </ResourceDictionary>

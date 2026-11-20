@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Agent.Core.Checkpoints;
+using Agent.Core.Services;
 
 namespace Agent.Core.Models
 {
@@ -218,8 +219,11 @@ namespace Agent.Core.Models
         public string Result
         {
             get => _result;
-            set { if (_result != value) { _result = value; OnChanged(); } }
+            set { if (_result != value) { _result = value; OnChanged(); OnChanged(nameof(ResultBlocks)); } }
         }
+
+        /// <summary>The final report split into text/code blocks for syntax-highlighted rendering (like a tool result).</summary>
+        public IReadOnlyList<MessageBlock> ResultBlocks => ChatMarkdown.SplitBlocks(Result);
 
         /// <summary>The failure message, when the sub-agent failed.</summary>
         public string Error

@@ -687,6 +687,7 @@ namespace Agent.Core.AgentTools
                         Result = blockReason
                     };
                     ToolExecuted?.Invoke(this, blocked);
+                    ToolExecutionBus.RaiseExecuted(blocked);
                     messages.Add(new ChatMessageData { Role = "tool", Content = blockReason, ToolCallId = call.Id ?? "" });
                 }
                 return null;
@@ -697,12 +698,14 @@ namespace Agent.Core.AgentTools
             var decision = await RequestApprovalAsync(tool, args, cancellationToken).ConfigureAwait(false);
             if (decision == ToolApprovalDecision.Reject)
             {
-                ToolExecuted?.Invoke(this, new AgentToolCall
+                var rejected = new AgentToolCall
                 {
                     ToolName = tool.Name,
                     Rejected = true,
                     Result = "Rejected by the user."
-                });
+                };
+                ToolExecuted?.Invoke(this, rejected);
+                ToolExecutionBus.RaiseExecuted(rejected);
                 messages.Add(new ChatMessageData
                 {
                     Role = "tool",
@@ -715,6 +718,8 @@ namespace Agent.Core.AgentTools
             string resultText;
             try
             {
+                ToolExecutionBus.RaiseStarted(new AgentToolCall { ToolName = tool.Name, Blocked = false });
+
                 resultText = await tool.ExecuteAsync(args, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
@@ -737,13 +742,15 @@ namespace Agent.Core.AgentTools
             }
 
             var truncated = Truncate(resultText, budget.ToolResultMaxChars);
-            ToolExecuted?.Invoke(this, new AgentToolCall
+            var executed = new AgentToolCall
             {
                 ToolName = tool.Name,
                 Result = truncated,
                 DisplayResult = string.IsNullOrWhiteSpace(displayText) ? "" : displayText,
                 Blocked = false
-            });
+            };
+            ToolExecuted?.Invoke(this, executed);
+            ToolExecutionBus.RaiseExecuted(executed);
 
             messages.Add(new ChatMessageData
             {
@@ -783,6 +790,7 @@ namespace Agent.Core.AgentTools
                         Result = blockReason
                     };
                     ToolExecuted?.Invoke(this, blocked);
+                    ToolExecutionBus.RaiseExecuted(blocked);
                     messages.Add(new ChatMessageData { Role = "user", Content = blockReason });
                 }
                 return null;
@@ -792,12 +800,14 @@ namespace Agent.Core.AgentTools
             if (decision == ToolApprovalDecision.Reject)
             {
                 var rejectRole = budget.UseToolRole ? "tool" : "user";
-                ToolExecuted?.Invoke(this, new AgentToolCall
+                var rejected = new AgentToolCall
                 {
                     ToolName = tool.Name,
                     Rejected = true,
                     Result = "Rejected by the user."
-                });
+                };
+                ToolExecuted?.Invoke(this, rejected);
+                ToolExecutionBus.RaiseExecuted(rejected);
                 messages.Add(new ChatMessageData
                 {
                     Role = rejectRole,
@@ -809,6 +819,8 @@ namespace Agent.Core.AgentTools
             string resultText;
             try
             {
+                ToolExecutionBus.RaiseStarted(new AgentToolCall { ToolName = tool.Name, Blocked = false });
+
                 resultText = await tool.ExecuteAsync(call.Arguments, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
@@ -831,13 +843,15 @@ namespace Agent.Core.AgentTools
             }
 
             var truncated = Truncate(resultText, budget.ToolResultMaxChars);
-            ToolExecuted?.Invoke(this, new AgentToolCall
+            var executed = new AgentToolCall
             {
                 ToolName = tool.Name,
                 Result = truncated,
                 DisplayResult = string.IsNullOrWhiteSpace(displayText) ? "" : displayText,
                 Blocked = false
-            });
+            };
+            ToolExecuted?.Invoke(this, executed);
+            ToolExecutionBus.RaiseExecuted(executed);
 
             var toolRole = budget.UseToolRole ? "tool" : "user";
             messages.Add(new ChatMessageData

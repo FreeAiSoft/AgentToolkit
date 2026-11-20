@@ -209,7 +209,7 @@
                     </ItemsControl>
                 </Grid>
 
-                <GridSplitter x:Name="ChatSplitter" Grid.Row="3" Height="5" HorizontalAlignment="Stretch"
+                <GridSplitter x:Name="ChatSplitter" Grid.Row="3" Height="4" HorizontalAlignment="Stretch"
                               VerticalAlignment="Center" ResizeDirection="Rows"
                               ResizeBehavior="PreviousAndNext"/>
 
@@ -317,8 +317,8 @@
                                       Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <Ellipse x:Name="CompactIndicator" Width="6" Height="6"
-                                          Fill="Red" HorizontalAlignment="Right" VerticalAlignment="Top"
-                                          Margin="0,2,2,0" Visibility="Collapsed"/>
+                                          Fill="Red" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Visibility="Collapsed"/>
                             </Grid>
                         </Button>
                         <Button x:Name="UpdateMemoryButton" Click="OnUpdateMemory" Width="24" Height="24"
@@ -477,27 +477,42 @@
                                                            Foreground="{DynamicResource Theme.TextSecondary}"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,6,0"
-                                                Style="{StaticResource IconButtonStyle}" Width="22" Height="22"
-                                                ToolTip="Delete chat" Click="OnDeleteHistoryCard">
-                                            <TextBlock Text="✕" FontSize="11" Foreground="{DynamicResource Theme.Text}"/>
-                                        </Button>
-                                        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,28,6,0"
-                                                Style="{StaticResource IconButtonStyle}" Width="22" Height="22"
-                                                ToolTip="Mark as important" Click="OnToggleImportant">
-                                            <TextBlock Text="!" FontSize="13" FontWeight="Bold">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.TextSecondary}"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsImportant}" Value="True">
-                                                                <Setter Property="Foreground" Value="{DynamicResource Theme.ImportantMark}"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </Button>
+                                        <ToggleButton x:Name="CardMenuButton" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                      Margin="0,6,6,0" Style="{StaticResource IconToggleButtonStyle}" Width="22" Height="22"
+                                                      ToolTip="More actions">
+                                            <Path Data="{Binding Source={x:Static mi:MaterialIconKind.DotsVertical}, Converter={StaticResource MaterialIconToGeometry}}"
+                                                  Fill="{DynamicResource Theme.Text}" Stretch="Uniform" Width="14" Height="14"/>
+                                        </ToggleButton>
+                                        <Popup x:Name="CardMenuPopup"
+                                               PlacementTarget="{Binding ElementName=CardMenuButton}"
+                                               Placement="Bottom" VerticalOffset="4"
+                                               StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade"
+                                               IsOpen="{Binding IsChecked, ElementName=CardMenuButton, Mode=TwoWay}">
+                                            <Border Background="{DynamicResource Theme.Panel}" BorderBrush="{DynamicResource Theme.Border}"
+                                                    BorderThickness="1" Padding="4">
+                                                <StackPanel>
+                                                    <Button Style="{StaticResource IconButtonStyle}" Width="22" Height="22"
+                                                            ToolTip="Delete chat" Click="OnDeleteHistoryCard">
+                                                        <TextBlock Text="✕" FontSize="11" Foreground="{DynamicResource Theme.Text}"/>
+                                                    </Button>
+                                                    <Button Style="{StaticResource IconButtonStyle}" Width="22" Height="22" Margin="0,4,0,0"
+                                                            ToolTip="Mark as important" Click="OnToggleImportant">
+                                                        <TextBlock Text="!" FontSize="13" FontWeight="Bold">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource Theme.TextSecondary}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsImportant}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{DynamicResource Theme.ImportantMark}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Border>
+                                        </Popup>
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
