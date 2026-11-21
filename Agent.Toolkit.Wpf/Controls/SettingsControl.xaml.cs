@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,6 +25,7 @@ namespace Agent.Toolkit.Wpf.Controls
     /// </summary>
     public partial class SettingsControl : UserControl
     {
+        private bool _syncingApiKey;
         private const int SettingsToastAutoHideSeconds = 6;
         private SettingsModel _settingsModel;
 
@@ -41,6 +43,7 @@ namespace Agent.Toolkit.Wpf.Controls
             DetachSettingsEvents();
             _settingsModel = GetSettingsModel();
             AttachSettingsEvents();
+            SyncApiKeyToPasswordBox();
 
             // Apply the persisted ownership mode first, then honor it.
             var mode = GetThemeMode();
@@ -103,6 +106,7 @@ namespace Agent.Toolkit.Wpf.Controls
 
             _settingsModel.SettingsSaved += OnSettingsSaved;
             _settingsModel.Notify += OnSettingsNotify;
+            _settingsModel.PropertyChanged += OnSettingsModelPropertyChanged;
         }
 
         private void DetachSettingsEvents()
@@ -112,6 +116,7 @@ namespace Agent.Toolkit.Wpf.Controls
 
             _settingsModel.SettingsSaved -= OnSettingsSaved;
             _settingsModel.Notify -= OnSettingsNotify;
+            _settingsModel.PropertyChanged -= OnSettingsModelPropertyChanged;
             _settingsModel = null;
         }
 
@@ -139,6 +144,38 @@ namespace Agent.Toolkit.Wpf.Controls
 
             ShowToast((NotificationKind)notify.NotifyLevel, notify.Message ?? "");
         }
+        private void OnSettingsModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (string.Equals(e.PropertyName, nameof(SettingsModel.ApiKey), StringComparison.Ordinal))
+                SyncApiKeyToPasswordBox();
+        }
+
+        private void SyncApiKeyToPasswordBox()
+        {
+            if (_syncingApiKey)
+                return;
+
+            _syncingApiKey = true;
+            try
+            {
+                var key = _settingsModel?.ApiKey ?? "";
+                if (ApiKeyBox != null && !string.Equals(ApiKeyBox.Password, key, StringComparison.Ordinal))
+                    ApiKeyBox.Password = key;
+            }
+            finally
+            {
+                _syncingApiKey = false;
+            }
+        }
+
+        private void OnApiKeyChanged(object sender, RoutedEventArgs e)
+        {
+            if (_syncingApiKey || _settingsModel == null)
+                return;
+
+            _settingsModel.ApiKey = ApiKeyBox.Password;
+        }
+
 
         private void ShowToast(NotificationKind kind, string message)
         {

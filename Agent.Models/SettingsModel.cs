@@ -23,6 +23,7 @@ namespace Agent.Models
     public sealed class SettingsModel : BaseModel
     {
         private readonly ISettingsStore _store;
+        private readonly IAgentLogger _logger;
 
         private string _baseUrl = "https://api.openai.com/v1";
         private string _apiKey = "";
@@ -125,9 +126,11 @@ namespace Agent.Models
             IFileWriter fileWriter = null,
             IFileOpener fileOpener = null,
             Func<string> logFilePathResolver = null,
-            Func<string> chatLogFilePathResolver = null)
+            Func<string> chatLogFilePathResolver = null,
+            IAgentLogger logger = null)
         {
             _store = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+            _logger = logger ?? NoOpLogger.Instance;
             _workspaceLogStore = workspaceLogStore;
             _workspaceProvider = workspaceProvider;
             _secretsStore = secretsStore;
@@ -152,6 +155,7 @@ namespace Agent.Models
             Apply(data);
 
             _globalLogFilePath = data?.LogFilePath ?? "";
+            _logger.Info("SettingsModel.Load: applied " + DescribeProvider(data));
             _globalChatLogFilePath = data?.ChatLogFilePath ?? "";
 
             ApplyWorkspaceLogSettings();
@@ -242,6 +246,7 @@ namespace Agent.Models
         public void SaveSettingsCommand()
         {
             var data = ToSettingsData();
+            _logger.Info("SettingsModel.SaveSettingsCommand: provider snapshot " + DescribeProvider(data));
             SettingsData.Normalize(data);
             Apply(data);
 
@@ -261,16 +266,20 @@ namespace Agent.Models
                 data.ChatLogFilePath = _globalChatLogFilePath;
             }
 
-            data.ApiKey = "";
             if (_secretsStore != null)
             {
+                // The API key goes to the secrets store and stays out of the settings payload.
+                data.ApiKey = "";
                 if (string.IsNullOrEmpty(_apiKey))
                     _secretsStore.ClearApiKey();
                 else
                     _secretsStore.SaveApiKey(_apiKey);
             }
+            // When no secrets store is injected, keep the key in data so the plain/legacy store
+            // (settings.json or SQLite) persists it and Load() can fall back to data.ApiKey.
 
             _store.Save(data);
+            _logger.Info("SettingsModel.SaveSettingsCommand: persisted " + DescribeProvider(data));
             SettingsSaved?.Invoke(this, EventArgs.Empty);
         }
 
@@ -633,6 +642,31 @@ namespace Agent.Models
         }
 
         #endregion
+
+        private static string DescribeProvider(SettingsData settings)
+        {
+            if (settings == null)
+                return "<null>";
+
+            return "ProviderId=" + (settings.ProviderId ?? "") +
+                   ", BaseUrl=" + (settings.BaseUrl ?? "") +
+                   ", Model=" + (settings.Model ?? "") +
+                   ", AzureApiVersion=" + (settings.AzureApiVersion ?? "") +
+                   ", AzureDeploymentName=" + (settings.AzureDeploymentName ?? "") +
+                   ", Temperature=" + settings.Temperature.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                   ", ReasoningEffort=" + (settings.ReasoningEffort ?? "") +
+                   ", HasApiKey=" + !string.IsNullOrEmpty(settings.ApiKey);
+        }
+
+        private sealed class NoOpLogger : IAgentLogger
+        {
+            public static readonly NoOpLogger Instance = new NoOpLogger();
+
+            public void Info(string message) { }
+            public void Warn(string message) { }
+            public void Error(string message) { }
+            public void Error(Exception exception, string message = null) { }
+        }
 
         #region Properties
 

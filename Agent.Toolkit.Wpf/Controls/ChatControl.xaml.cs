@@ -19,6 +19,8 @@ using Agent.Core.Models;
 using Agent.Core.Services;
 using Agent.Models;
 using Agent.Toolkit.Wpf.Theming;
+using Agent.Toolkit.Wpf.Diagnostics;
+using Agent.Toolkit.Wpf.Markdown;
 using Microsoft.Win32;
 
 namespace Agent.Toolkit.Wpf.Controls
@@ -32,6 +34,9 @@ namespace Agent.Toolkit.Wpf.Controls
     public partial class ChatControl : UserControl
     {
         public const double PinnedExpandedHeight = 240.0;
+
+        private const string MemoryUpdatePrompt =
+            "Обнови memory bank: прочитай все файлы memory-bank/*.md (projectbrief.md, productContext.md, activeContext.md, systemPatterns.md, techContext.md, progress.md) и обнови activeContext.md и progress.md, чтобы отразить текущее состояние проекта.";
 
         private bool _isRecording;
         private bool _isTranscribing;
@@ -72,6 +77,9 @@ namespace Agent.Toolkit.Wpf.Controls
         /// of the legacy static <see cref="Agent.Core.Services.SettingsStore"/>.
         /// </summary>
         public string AppDataDirectory { get; set; }
+
+        /// <summary>Optional logger for settings persistence diagnostics.</summary>
+        public IAgentLogger Logger { get; set; }
 
         /// <summary>The chat model bound as this control's DataContext.</summary>
         public ChatModel Model => DataContext as ChatModel;
@@ -274,6 +282,27 @@ namespace Agent.Toolkit.Wpf.Controls
                 : existing.TrimEnd() + Environment.NewLine + text;
             InputBox.CaretIndex = InputBox.Text.Length;
             InputBox.Focus();
+        }
+
+        /// <summary>Renders the documentation index into the Docs overlay using the shipped markdown docs.</summary>
+        public void ShowDocsIndex()
+        {
+            DocsTitleTextControl.Text = "Documentation";
+            var markdown = HelpDocumentation.ReadAll();
+            DocsContentControl.Content = string.IsNullOrWhiteSpace(markdown)
+                ? new TextBlock
+                {
+                    Text = "Documentation is not available.",
+                    Foreground = (Brush)FindResource("Theme.TextMuted")
+                }
+                : MarkdownRenderer.Render(markdown);
+            DocsScroll.ScrollToHome();
+        }
+
+        /// <summary>Places the memory-bank update prompt into the chat input box.</summary>
+        public void RequestMemoryUpdate()
+        {
+            SetInputText(MemoryUpdatePrompt);
         }
 
         /// <summary>Shows or hides the blinking red dot on the "Compact now" button (agent compaction state).</summary>
@@ -534,7 +563,7 @@ namespace Agent.Toolkit.Wpf.Controls
 
         private void OnUpdateMemory(object sender, RoutedEventArgs e)
         {
-            Host?.RequestMemoryUpdate();
+            RequestMemoryUpdate();
         }
 
         // ------------------------------------------------------------------
@@ -600,23 +629,28 @@ namespace Agent.Toolkit.Wpf.Controls
             if (!string.IsNullOrWhiteSpace(AppDataDirectory))
             {
                 if (_defaultSettingsStore == null)
-                    _defaultSettingsStore = new ToolkitSettingsStore(AppDataDirectory);
+                {
+                    _defaultSettingsStore = new ToolkitSettingsStore(AppDataDirectory, logger: Logger);
+                    WpfLog.Info("ChatControl.SaveSettings: created ToolkitSettingsStore for AppDataDirectory=" + AppDataDirectory);
+                }
+                WpfLog.Info("ChatControl.SaveSettings: saving via ToolkitSettingsStore.");
                 _defaultSettingsStore.Save(Settings);
                 return;
             }
 
-            SettingsStore.Save(Settings);
+            WpfLog.Info("ChatControl.SaveSettings: no AppDataDirectory, saving via legacy SettingsStore.");
+            SettingsStore.Save(Settings, Logger);
         }
 
         private void OnDocsClick(object sender, RoutedEventArgs e)
         {
-            Host?.ShowDocsIndex();
+            ShowDocsIndex();
             DocsOverlay.Visibility = Visibility.Visible;
         }
 
         private void OnDocsHome(object sender, RoutedEventArgs e)
         {
-            Host?.ShowDocsIndex();
+            ShowDocsIndex();
         }
 
         private void OnDocsClose(object sender, RoutedEventArgs e)

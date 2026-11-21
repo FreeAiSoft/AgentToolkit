@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Agent.Core.Context;
 using Agent.Core.Models;
+using Agent.Core.AgentTools;
 
 namespace Agent.Core.Contracts
 {
@@ -192,5 +193,50 @@ namespace Agent.Core.Contracts
             IReadOnlyList<ChatMessageData> transcript,
             ContextBudget budget,
             CancellationToken cancellationToken);
+    }
+
+    /// <summary>
+    /// Factory for the agent runtime supplied by the host. The shared chat session does not know
+    /// how an <see cref="AgentRunner"/> is assembled (AI provider, tool registry, permissions,
+    /// budget, prompt factory, approval gate); it only asks the host for a ready-to-run runner.
+    /// </summary>
+    public interface IAgentRuntimeProvider
+    {
+        /// <summary>Creates a ready-to-run <see cref="AgentRunner"/>.</summary>
+        AgentRunner CreateRunner();
+
+        /// <summary>Context budget used by <c>RunAsync</c>/<c>ResumeAsync</c>/<c>CompactAsync</c>.</summary>
+        ContextBudget Budget { get; }
+
+        /// <summary>System prompt used when compacting the transcript.</summary>
+        string CompactSystemPrompt { get; }
+    }
+
+    /// <summary>
+    /// Host-specific actions that the shared chat session cannot implement because they depend on
+    /// VS/DTE, Git, Roslyn or robot services. Generic chat mechanics do not belong here.
+    /// </summary>
+    public interface IChatHostActions
+    {
+        /// <summary>Opens the commit control (Git + VS document save).</summary>
+        void OpenCommitControl();
+
+        /// <summary>Feeds the current VS build/compilation errors into the chat as agent context.</summary>
+        void SendBuildErrors();
+
+        /// <summary>Opens the create-robot dialog.</summary>
+        void OpenCreateRobot();
+
+        /// <summary>Rebuilds the agent tool registry from the current settings and permissions.</summary>
+        void RebuildAgentTools();
+
+        /// <summary>Resets checkpoint/workspace-scoping state when a new chat starts.</summary>
+        void ResetCheckpointState();
+
+        /// <summary>Rehydrates checkpoint/diff metadata after opening a conversation.</summary>
+        Task RehydrateCheckpointAsync(string conversationId);
+
+        /// <summary>Drops host-side state when a conversation is closed, deleted or cleared.</summary>
+        void OnConversationRemoved();
     }
 }

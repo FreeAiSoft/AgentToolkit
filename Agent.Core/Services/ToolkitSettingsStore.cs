@@ -20,17 +20,20 @@ namespace Agent.Core.Services
 
         private readonly string _appDataDirectory;
         private readonly string _legacySettingsFile;
+        private readonly IAgentLogger _logger;
 
         public ToolkitSettingsStore(
             string appDataDirectory,
             IWorkspaceProvider workspaceProvider = null,
-            string legacySettingsFile = null)
+            string legacySettingsFile = null,
+            IAgentLogger logger = null)
         {
             if (appDataDirectory == null)
                 throw new ArgumentNullException(nameof(appDataDirectory));
 
             _appDataDirectory = appDataDirectory;
             _legacySettingsFile = legacySettingsFile;
+            _logger = logger ?? NoOpLogger.Instance;
 
             // workspaceProvider is intentionally unused: settings must survive a restart even
             // when the open workspace changes. Per-workspace storage is reserved for history.
@@ -45,6 +48,8 @@ namespace Agent.Core.Services
             try
             {
                 var databasePath = DatabasePath;
+                _logger.Info("ToolkitSettingsStore.Load: databasePath=" + databasePath +
+                             ", legacySettingsFile=" + (_legacySettingsFile ?? "<null>"));
                 Directory.CreateDirectory(Path.GetDirectoryName(databasePath));
 
                 using (var connection = OpenConnection(databasePath))
@@ -59,6 +64,7 @@ namespace Agent.Core.Services
                         {
                             valueJson = JsonConvert.SerializeObject(legacy);
                             UpsertSettings(connection, valueJson);
+                            _logger.Info("ToolkitSettingsStore.Load: imported legacy settings into empty database.");
                         }
                     }
 
@@ -66,13 +72,16 @@ namespace Agent.Core.Services
                     {
                         var settings = JsonConvert.DeserializeObject<SettingsData>(valueJson) ?? new SettingsData();
                         SettingsData.Normalize(settings);
+                        _logger.Info("ToolkitSettingsStore.Load: loaded " + DescribeProvider(settings));
                         return settings;
                     }
+
+                    _logger.Info("ToolkitSettingsStore.Load: no stored settings, returning defaults.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore storage errors and fall back to defaults, matching the JSON store.
+                _logger.Error(ex, "ToolkitSettingsStore.Load failed; falling back to defaults.");
             }
 
             var defaults = new SettingsData();
@@ -91,6 +100,8 @@ namespace Agent.Core.Services
                 SettingsData.Normalize(settings);
 
                 var databasePath = DatabasePath;
+                _logger.Info("ToolkitSettingsStore.Save: databasePath=" + databasePath +
+                             ", " + DescribeProvider(settings));
                 Directory.CreateDirectory(Path.GetDirectoryName(databasePath));
 
                 using (var connection = OpenConnection(databasePath))
@@ -98,10 +109,12 @@ namespace Agent.Core.Services
                     EnsureSchema(connection);
                     UpsertSettings(connection, JsonConvert.SerializeObject(settings));
                 }
+
+                _logger.Info("ToolkitSettingsStore.Save: persisted.");
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore write errors, matching the JSON store.
+                _logger.Error(ex, "ToolkitSettingsStore.Save failed.");
             }
         }
 
@@ -112,20 +125,44 @@ namespace Agent.Core.Services
 
             try
             {
+                _logger.Info("ToolkitSettingsStore.TryLoadLegacy: path=" + _legacySettingsFile);
                 if (!File.Exists(_legacySettingsFile))
+                {
+                    _logger.Info("ToolkitSettingsStore.TryLoadLegacy: file does not exist.");
                     return null;
+                }
 
                 var settings = JsonConvert.DeserializeObject<SettingsData>(File.ReadAllText(_legacySettingsFile));
                 if (settings == null)
+                {
+                    _logger.Info("ToolkitSettingsStore.TryLoadLegacy: deserialized to null.");
                     return null;
+                }
 
                 SettingsData.Normalize(settings);
+                _logger.Info("ToolkitSettingsStore.TryLoadLegacy: loaded " + DescribeProvider(settings));
                 return settings;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.Error(ex, "ToolkitSettingsStore.TryLoadLegacy failed.");
                 return null;
             }
+        }
+
+        private static string DescribeProvider(SettingsData settings)
+        {
+            if (settings == null)
+                return "<null>";
+
+            return "ProviderId=" + (settings.ProviderId ?? "") +
+                   ", BaseUrl=" + (settings.BaseUrl ?? "") +
+                   ", Model=" + (settings.Model ?? "") +
+                   ", AzureApiVersion=" + (settings.AzureApiVersion ?? "") +
+                   ", AzureDeploymentName=" + (settings.AzureDeploymentName ?? "") +
+                   ", Temperature=" + settings.Temperature.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                   ", ReasoningEffort=" + (settings.ReasoningEffort ?? "") +
+                   ", HasApiKey=" + !string.IsNullOrEmpty(settings.ApiKey);
         }
 
         private static SqliteConnection OpenConnection(string databasePath)
@@ -185,6 +222,16 @@ ON CONFLICT(key) DO UPDATE SET
                 command.CommandText = sql;
                 command.ExecuteNonQuery();
             }
+        }
+
+        private sealed class NoOpLogger : IAgentLogger
+        {
+            public static readonly NoOpLogger Instance = new NoOpLogger();
+
+            public void Info(string message) { }
+            public void Warn(string message) { }
+            public void Error(string message) { }
+            public void Error(Exception exception, string message = null) { }
         }
     }
 }

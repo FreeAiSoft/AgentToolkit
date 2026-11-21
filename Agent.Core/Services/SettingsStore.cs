@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Agent.Core.Providers;
+using Agent.Core.Contracts;
 using Agent.Core.Services;
 
 namespace Agent.Core.Services
@@ -356,7 +357,22 @@ namespace Agent.Core.Services
 
         public static string SettingsFile => Path.Combine(SettingsDirectory, "settings.json");
 
-        public static SettingsData Load()
+        private static string DescribeProvider(SettingsData settings)
+        {
+            if (settings == null)
+                return "<null>";
+
+            return "ProviderId=" + (settings.ProviderId ?? "") +
+                   ", BaseUrl=" + (settings.BaseUrl ?? "") +
+                   ", Model=" + (settings.Model ?? "") +
+                   ", AzureApiVersion=" + (settings.AzureApiVersion ?? "") +
+                   ", AzureDeploymentName=" + (settings.AzureDeploymentName ?? "") +
+                   ", Temperature=" + settings.Temperature.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                   ", ReasoningEffort=" + (settings.ReasoningEffort ?? "") +
+                   ", HasApiKey=" + !string.IsNullOrEmpty(settings.ApiKey);
+        }
+
+        public static SettingsData Load(IAgentLogger logger = null)
         {
             try
             {
@@ -365,29 +381,37 @@ namespace Agent.Core.Services
                     var json = File.ReadAllText(SettingsFile);
                     var settings = JsonConvert.DeserializeObject<SettingsData>(json) ?? new SettingsData();
                     SettingsData.Normalize(settings);
+                    if (logger != null)
+                        logger.Info("SettingsStore.Load: loaded " + DescribeProvider(settings));
                     return settings;
                 }
             }
             catch
             {
-                // ignore read errors — fall back to defaults
+                if (logger != null)
+                    logger.Error("SettingsStore.Load failed; falling back to defaults.");
             }
+            if (logger != null)
+                logger.Info("SettingsStore.Load: file not found, returning defaults.");
             var defaults = new SettingsData();
             SettingsData.Normalize(defaults);
             return defaults;
         }
 
-        public static void Save(SettingsData settings)
+        public static void Save(SettingsData settings, IAgentLogger logger = null)
         {
             if (settings == null) return;
             try
             {
                 Directory.CreateDirectory(SettingsDirectory);
                 File.WriteAllText(SettingsFile, JsonConvert.SerializeObject(settings, Formatting.Indented));
+                if (logger != null)
+                    logger.Info("SettingsStore.Save: saved to " + SettingsFile + ", " + DescribeProvider(settings));
             }
             catch
             {
-                // ignore write errors
+                if (logger != null)
+                    logger.Error("SettingsStore.Save failed.");
             }
         }
     }

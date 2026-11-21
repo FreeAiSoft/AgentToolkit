@@ -68,13 +68,19 @@ namespace Agent.Toolkit.Wpf.Controls
         /// </summary>
         void OnConversationRemoved();
 
-        /// <summary>Renders the documentation index into the chat's Docs overlay.</summary>
+        /// <summary>
+        /// Legacy hook: <see cref="ChatControl"/> now renders the documentation index itself and no
+        /// longer calls this method. Kept on the contract for backwards compatibility.
+        /// </summary>
         void ShowDocsIndex();
 
         /// <summary>Runs context compaction through the host agent runner and applies the condensed transcript.</summary>
         Task CompactNowAsync();
 
-        /// <summary>Places the memory-bank update prompt into the chat input box.</summary>
+        /// <summary>
+        /// Legacy hook: <see cref="ChatControl"/> now inserts the memory-bank update prompt itself and
+        /// no longer calls this method. Kept on the contract for backwards compatibility.
+        /// </summary>
         void RequestMemoryUpdate();
     }
 }

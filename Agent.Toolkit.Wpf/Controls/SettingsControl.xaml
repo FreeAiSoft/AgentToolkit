@@ -151,6 +151,7 @@
                                                  Grid.Column="1"
                                                  x:Name="ApiKeyBox"
                                                  x:FieldModifier="public"
+                                                 PasswordChanged="OnApiKeyChanged"
                                                  Margin="0,0,0,4"
                                                  Visibility="{Binding Settings.IsApiKeyVisible, Converter={StaticResource BoolToVis}}" />
 
