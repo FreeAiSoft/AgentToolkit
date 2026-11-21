@@ -834,6 +834,7 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0"
@@ -893,6 +894,10 @@
                                               Content="Auto-send voice input"
                                               Margin="0,2,0,4"
                                               Foreground="{DynamicResource Theme.Text}" />
+                                    <controls:MicrophoneSettingsView Grid.Row="5"
+                                                                     Grid.Column="0"
+                                                                     Grid.ColumnSpan="2"
+                                                                     Margin="0,8,0,0" />
                                 </Grid>
                             </ScrollViewer>
                         </TabItem>

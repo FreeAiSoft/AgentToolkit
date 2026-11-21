@@ -189,6 +189,9 @@ namespace Agent.Core.Services
         /// <summary>Automatically send recognized speech instead of inserting it into the input box.</summary>
         public bool SpeechAutoSend { get; set; } = false;
 
+        /// <summary>Input device number for voice capture: -1 = system default, 0..n-1 = a NAudio WaveInEvent device.</summary>
+        public int MicrophoneDeviceNumber { get; set; } = -1;
+
         /// <summary>Automatically send runtime exceptions that break the debugger to the agent chat.</summary>
         public bool AutoCaptureRuntimeExceptions { get; set; } = false;
 
@@ -276,6 +279,8 @@ namespace Agent.Core.Services
                 settings.SpeechToTextModel = "whisper-1";
             if (string.IsNullOrWhiteSpace(settings.SpeechToTextLanguage))
                 settings.SpeechToTextLanguage = "ru";
+            if (settings.MicrophoneDeviceNumber < -1)
+                settings.MicrophoneDeviceNumber = -1;
 
             if (settings.ProxyPort <= 0 || settings.ProxyPort > 65535)
                 settings.ProxyPort = 8080;

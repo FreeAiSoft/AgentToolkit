@@ -1,0 +1,12 @@
+<Window x:Class="Agent.ChatHost.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Agent.Toolkit.Wpf.Controls;assembly=Agent.Toolkit.Wpf"
+        Title="Agent Chat Host"
+        Width="1100" Height="860"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Theme.Window}">
+    <Grid>
+        <controls:AgentTabControl x:Name="Tabs" Margin="5"/>
+    </Grid>
+</Window>

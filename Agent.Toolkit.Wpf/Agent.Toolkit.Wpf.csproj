@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
     Shared WPF controls and host helpers for the agent hosts. This is the only AgentShared
@@ -24,6 +24,7 @@
          but is declared explicitly so the chat controls stay self-contained. -->
     <PackageReference Include="Markdig" Version="1.4.2" />
     <PackageReference Include="Material.Icons" Version="3.0.2" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
   </ItemGroup>
 

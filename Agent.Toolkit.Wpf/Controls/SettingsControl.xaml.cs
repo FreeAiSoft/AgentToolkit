@@ -177,6 +177,18 @@ namespace Agent.Toolkit.Wpf.Controls
             SettingsSubTabs.Items.Insert(index, new TabItem { Content = section.Content });
         }
 
+        /// <summary>Inserts the toolkit's microphone device settings section at <paramref name="index"/>.</summary>
+        public void InsertMicrophoneSection(int index)
+        {
+            InsertHostSection(index, new SettingsSection
+            {
+                Title = "Microphone",
+                OutlineIcon = MaterialIconKind.MicrophoneOutline,
+                FilledIcon = MaterialIconKind.Microphone,
+                Content = new MicrophoneSettingsView()
+            });
+        }
+
         private Grid BuildNavIcon(MaterialIconKind outlineIcon, MaterialIconKind filledIcon)
         {
             var grid = new Grid();

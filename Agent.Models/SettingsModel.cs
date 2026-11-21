@@ -74,6 +74,7 @@ namespace Agent.Models
         private string _speechToTextLanguage = "ru";
         private string _voskModelPath = "";
         private bool _speechAutoSend = false;
+        private int _microphoneDeviceNumber = -1;
         private bool _autoCaptureRuntimeExceptions = false;
         private bool _checkpointsEnabled = true;
         private bool _roslynSemanticsEnabled = true;
@@ -216,6 +217,7 @@ namespace Agent.Models
                 SpeechToTextLanguage = _speechToTextLanguage,
                 VoskModelPath = _voskModelPath,
                 SpeechAutoSend = _speechAutoSend,
+                MicrophoneDeviceNumber = _microphoneDeviceNumber,
                 AutoCaptureRuntimeExceptions = _autoCaptureRuntimeExceptions,
                 CheckpointsEnabled = _checkpointsEnabled,
                 RoslynSemanticsEnabled = _roslynSemanticsEnabled,
@@ -365,6 +367,7 @@ namespace Agent.Models
             SpeechToTextLanguage = data.SpeechToTextLanguage;
             VoskModelPath = data.VoskModelPath;
             SpeechAutoSend = data.SpeechAutoSend;
+            MicrophoneDeviceNumber = data.MicrophoneDeviceNumber;
             AutoCaptureRuntimeExceptions = data.AutoCaptureRuntimeExceptions;
             CheckpointsEnabled = data.CheckpointsEnabled;
             RoslynSemanticsEnabled = data.RoslynSemanticsEnabled;
@@ -396,9 +399,11 @@ namespace Agent.Models
 
         
 
-
 
-
+
+
+
+
 
         #region Native tool toggles
 
@@ -871,6 +876,9 @@ namespace Agent.Models
         public string VoskModelPath { get => _voskModelPath; set => SetProperty(ref _voskModelPath, value); }
 
         public bool SpeechAutoSend { get => _speechAutoSend; set => SetProperty(ref _speechAutoSend, value); }
+
+        /// <summary>Input device number for voice capture: -1 = system default, 0..n-1 = a NAudio WaveInEvent device.</summary>
+        public int MicrophoneDeviceNumber { get => _microphoneDeviceNumber; set => SetProperty(ref _microphoneDeviceNumber, value); }
 
         public bool AutoCaptureRuntimeExceptions { get => _autoCaptureRuntimeExceptions; set => SetProperty(ref _autoCaptureRuntimeExceptions, value); }
 

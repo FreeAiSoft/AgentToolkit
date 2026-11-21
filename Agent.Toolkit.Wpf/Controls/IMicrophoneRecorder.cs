@@ -5,7 +5,7 @@ namespace Agent.Toolkit.Wpf.Controls
     /// <summary>
     /// Minimal microphone recorder seam used by <see cref="ChatControl"/> for voice input. The
     /// WPF host provides the concrete implementation (e.g. an NAudio-based recorder); the toolkit
-    /// stays free of audio libraries.
+    /// consumes it and additionally ships a NAudio-based device settings view.
     /// </summary>
     public interface IMicrophoneRecorder
     {
