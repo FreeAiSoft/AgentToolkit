@@ -42,6 +42,7 @@ namespace Agent.Toolkit.Wpf.Controls
         private IMicrophoneRecorder _mic;
         private ISpeechToTextService _stt;
         private ToolCallProgressTracker _toolTracker;
+        private ToolkitSettingsStore _defaultSettingsStore;
 
         public ChatControl()
         {
@@ -64,6 +65,13 @@ namespace Agent.Toolkit.Wpf.Controls
         /// inject their own <see cref="Agent.Core.Contracts.ISettingsStore"/> here.
         /// </summary>
         public ISettingsStore SettingsPersistence { get; set; }
+
+        /// <summary>
+        /// Host's app-data directory. When set (and <see cref="SettingsPersistence"/> is null), the
+        /// permissions overlay persists to a global SQLite store under this directory instead
+        /// of the legacy static <see cref="Agent.Core.Services.SettingsStore"/>.
+        /// </summary>
+        public string AppDataDirectory { get; set; }
 
         /// <summary>The chat model bound as this control's DataContext.</summary>
         public ChatModel Model => DataContext as ChatModel;
@@ -583,8 +591,21 @@ namespace Agent.Toolkit.Wpf.Controls
             if (SettingsPersistence != null)
                 SettingsPersistence.Save(Settings);
             else
-                SettingsStore.Save(Settings);
+                SaveSettings();
             Host?.RebuildAgentTools();
+        }
+
+        private void SaveSettings()
+        {
+            if (!string.IsNullOrWhiteSpace(AppDataDirectory))
+            {
+                if (_defaultSettingsStore == null)
+                    _defaultSettingsStore = new ToolkitSettingsStore(AppDataDirectory);
+                _defaultSettingsStore.Save(Settings);
+                return;
+            }
+
+            SettingsStore.Save(Settings);
         }
 
         private void OnDocsClick(object sender, RoutedEventArgs e)

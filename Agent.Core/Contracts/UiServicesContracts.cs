@@ -17,6 +17,17 @@ namespace Agent.Core.Contracts
     }
 
     /// <summary>
+    /// Returns the host application's app-data root directory. The toolkit appends its own
+    /// <c>AgentToolkit</c> subfolder to it, so a host can enable the default SQLite-backed
+    /// settings persistence with a single seam instead of constructing a full <c>ISettingsStore</c>.
+    /// </summary>
+    public interface IAppDataDirectoryProvider
+    {
+        /// <summary>Root app-data directory of the host application.</summary>
+        string GetAppDataDirectory();
+    }
+
+    /// <summary>
     /// Describes the currently open workspace and signals when it changes. Models use it to scope
     /// their storage (history, ui state, log settings) and the host subscribes to
     /// <see cref="WorkspaceChanged"/> to re-scope on the fly.
