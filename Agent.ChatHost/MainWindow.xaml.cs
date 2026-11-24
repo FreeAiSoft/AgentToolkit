@@ -15,7 +15,7 @@ namespace Agent.ChatHost
             InitializeComponent();
 
             // --- Chat tab ---
-            var historyStore = new InMemoryChatHistoryStore();
+            var historyStore = new Agent.Core.Stores.InMemoryChatHistoryStore();
             var logger = new NLogAgentLogger();
 
             // The standalone host persists the toolkit's own settings (the chat permissions
@@ -27,11 +27,11 @@ namespace Agent.ChatHost
                 "AgentChatHost");
             var settingsStore = new ToolkitSettingsStore(appDataDirectory, logger: logger);
             var settings = settingsStore.Load();
-            logger.Info("MainWindow: standalone host wiring — ChatHost=StandaloneChatHost (shared ChatAgentSession + ChatHostBase). The configured AI provider is NOT used; StubAiProvider runs through the full agent loop.");
+            logger.Info("MainWindow: standalone host wiring — ChatHost=Agent.Toolkit.Wpf.Controls.StandaloneChatHost (shared ChatAgentSession + ChatHostBase). The configured AI provider is NOT used; StubAiProvider runs through the full agent loop.");
             logger.Info("MainWindow: loaded provider settings " + DescribeProvider(settings));
             var model = new ChatModel(historyStore, logger: logger);
-            var runtimeProvider = new StandaloneRuntimeProvider();
-            var host = new StandaloneChatHost(model, runtimeProvider, logger);
+            // Stub runtime is provided by Agent.Toolkit.Wpf.Controls.StandaloneChatHost.
+            var host = new Agent.Toolkit.Wpf.Controls.StandaloneChatHost(model, logger);
 
             Tabs.ChatPanel.DataContext = model;
             Tabs.ChatPanel.Host = host;
