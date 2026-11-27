@@ -14,8 +14,8 @@ namespace Agent.Toolkit.Wpf.Controls
     {
         private readonly IChatHostActions _hostActions;
 
-        public StandaloneChatHost(ChatModel model, IAgentLogger logger = null, IChatHostActions hostActions = null)
-            : base(model, new StubRuntimeProvider(), logger)
+        public StandaloneChatHost(ChatModel model, IAgentLogger logger = null, IChatHostActions hostActions = null, IAgentRuntimeProvider runtimeProvider = null)
+            : base(model, runtimeProvider ?? new StubRuntimeProvider(), logger)
         {
             _hostActions = hostActions ?? NullHostActions.Instance;
         }

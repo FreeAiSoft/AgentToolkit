@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -5,6 +8,8 @@ using NUnit.Framework;
 using Agent.Core.AgentTools;
 using Agent.Core.Context;
 using Agent.Core.Models;
+using Agent.Core.Contracts;
+
 using Agent.Models;
 using Agent.Tests.Fakes;
 
@@ -65,10 +70,170 @@ namespace Agent.Tests
 
             Assert.That(model.Messages.Count, Is.EqualTo(2));
             Assert.That(model.Messages[0].Kind, Is.EqualTo(ChatMessageKind.User));
-            Assert.That(model.Messages[1].Kind, Is.EqualTo(ChatMessageKind.AgentText));
+            Assert.That(model.Messages[1].Kind, Is.EqualTo(ChatMessageKind.ResultAnswerPlan));
             Assert.That(model.Messages[1].Text, Is.EqualTo("hello"));
             Assert.That(model.Messages[1].IsPartial, Is.False);
         }
+
+        [Test]
+        public async Task SendAsync_ReasoningThenContent_KeepsAnswerInSeparateMessage()
+        {
+            var model = new ChatModel(new FakeChatHistoryStore());
+            var provider = new FakeStreamingAiProvider((call, progress, ct) =>
+            {
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningBegin, SegmentId = "r1" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningDelta, Text = "think" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ReasoningEnd, Text = "think" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentBegin, SegmentId = "c1" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = "answer" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd, Text = "answer" });
+                return Task.FromResult(new ChatResponse { Answer = "answer", Reasoning = "think" });
+            });
+
+            var actions = new FakeChatHostActions();
+            var session = CreateSession(model, provider, actions);
+
+            await session.SendAsync("hi", null);
+
+            Assert.That(model.Messages.Count, Is.EqualTo(3));
+            Assert.That(model.Messages[0].Kind, Is.EqualTo(ChatMessageKind.User));
+
+            // Reasoning is its own message, never folded into the answer.
+            Assert.That(model.Messages[1].Kind, Is.EqualTo(ChatMessageKind.AgentText));
+            Assert.That(model.Messages[1].Reasoning, Is.EqualTo("think"));
+            Assert.That(model.Messages[1].Text, Is.EqualTo(""));
+            Assert.That(model.Messages[1].IsThinking, Is.False);
+
+            // The answer is a separate message with no reasoning.
+            Assert.That(model.Messages[2].Kind, Is.EqualTo(ChatMessageKind.ResultAnswerPlan));
+            Assert.That(model.Messages[2].Reasoning, Is.EqualTo(""));
+            Assert.That(model.Messages[2].Text, Is.EqualTo("answer"));
+            Assert.That(model.Messages[2].IsPartial, Is.False);
+        }
+
+        [Test]
+        public async Task SendAsync_InActMode_UsesResultAnswerAct()
+        {
+            var model = new ChatModel(new FakeChatHistoryStore());
+            model.RestoreMode(AgentMode.Act);
+
+            var provider = new FakeStreamingAiProvider((call, progress, ct) =>
+            {
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentBegin, SegmentId = "c1" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = "done" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd, Text = "done" });
+                return Task.FromResult(new ChatResponse { Answer = "done" });
+            });
+
+            var actions = new FakeChatHostActions();
+            var session = CreateSession(model, provider, actions);
+
+            await session.SendAsync("hi", null);
+
+            Assert.That(model.Messages.Count, Is.EqualTo(2));
+            Assert.That(model.Messages[0].Kind, Is.EqualTo(ChatMessageKind.User));
+            Assert.That(model.Messages[1].Kind, Is.EqualTo(ChatMessageKind.ResultAnswerAct));
+            Assert.That(model.Messages[1].Mode, Is.EqualTo("Act"));
+            Assert.That(model.Messages[1].Text, Is.EqualTo("done"));
+            Assert.That(model.Messages[1].IsPartial, Is.False);
+        }
+
+
+
+        [Test]
+        public async Task SendAsync_WithDispatcherContext_DoesNotCloseContentBeforeDeltasAreApplied()
+        {
+            var model = new ChatModel(new FakeChatHistoryStore());
+
+            var firstPosted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var allowMore = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var provider = new FakeStreamingAiProvider(async (call, progress, ct) =>
+            {
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentBegin, SegmentId = "c1" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = "a" });
+                firstPosted.TrySetResult(true);
+                await allowMore.Task.ConfigureAwait(false);
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = "bc" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd });
+                return new ChatResponse { Answer = "abc" };
+            });
+
+            var actions = new FakeChatHostActions();
+            var session = CreateSession(model, provider, actions);
+
+            var dispatcher = new ManualDispatcherSynchronizationContext();
+            var previous = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(dispatcher);
+            try
+            {
+                var turnTask = session.SendAsync("hi", null);
+
+                await firstPosted.Task.ConfigureAwait(false);
+                dispatcher.ProcessOne(); // ContentBegin -> opens the AgentText message (IsPartial = true)
+                dispatcher.ProcessOne(); // ContentDelta "a"
+
+                allowMore.TrySetResult(true);
+                await turnTask.ConfigureAwait(false);
+
+                // The turn has completed. Because every stream mutation, including the closing
+                // TurnEnd, is marshalled through the dispatcher queue, the message is still open
+                // here: its remaining deltas are queued, not applied early on another thread.
+                Assert.That(model.Messages.Count, Is.EqualTo(2));
+                Assert.That(model.Messages[1].IsPartial, Is.True);
+
+                dispatcher.Drain();
+
+                Assert.That(model.Messages.Count, Is.EqualTo(2));
+                Assert.That(model.Messages[0].Kind, Is.EqualTo(ChatMessageKind.User));
+                Assert.That(model.Messages[1].Kind, Is.EqualTo(ChatMessageKind.ResultAnswerPlan));
+                Assert.That(model.Messages[1].Text, Is.EqualTo("abc"));
+                Assert.That(model.Messages[1].IsPartial, Is.False);
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(previous);
+            }
+        }
+
+        [Test]
+        public async Task SendAsync_WithReorderingContext_PreservesReportOrder()
+        {
+            var model = new ChatModel(new FakeChatHistoryStore());
+
+            var provider = new FakeStreamingAiProvider((call, progress, ct) =>
+            {
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentBegin, SegmentId = "c1" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = "a" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentDelta, Text = "bc" });
+                progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.ContentEnd });
+                return Task.FromResult(new ChatResponse { Answer = "abc" });
+            });
+
+            var actions = new FakeChatHostActions();
+            var session = CreateSession(model, provider, actions);
+
+            var reordering = new ReorderingSynchronizationContext();
+            var previous = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(reordering);
+            try
+            {
+                var turnTask = session.SendAsync("hi", null);
+                await turnTask.ConfigureAwait(false);
+                reordering.Drain();
+
+                Assert.That(model.Messages.Count, Is.EqualTo(2));
+                Assert.That(model.Messages[0].Kind, Is.EqualTo(ChatMessageKind.User));
+                Assert.That(model.Messages[1].Kind, Is.EqualTo(ChatMessageKind.ResultAnswerPlan));
+                Assert.That(model.Messages[1].Text, Is.EqualTo("abc"));
+                Assert.That(model.Messages[1].IsPartial, Is.False);
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(previous);
+            }
+        }
+
 
         [Test]
         public async Task SendAsync_WhileRunning_EnqueuesAndDrainsAfterTurn()
@@ -189,5 +354,82 @@ namespace Agent.Tests
             Assert.That(model.Messages[2].Kind, Is.EqualTo(ChatMessageKind.User));
             Assert.That(model.Messages[2].Text, Is.EqualTo("u3"));
         }
+
+        [Test]
+        public void RebuildRuntime_RecreatesRunnerFromProvider()
+        {
+            var model = new ChatModel(new FakeChatHistoryStore());
+            var provider = new FakeStreamingAiProvider(
+                (call, progress, ct) => Task.FromResult(new ChatResponse { Answer = "ok" }));
+            var createCount = 0;
+
+            var runtime = new CountingRuntimeProvider(() =>
+            {
+                createCount++;
+                return CreateRunner(provider, new ContextBudget { MaxIterations = 4 });
+            });
+
+            var session = new ChatAgentSession(model, runtime, new FakeChatHostActions());
+            Assert.That(createCount, Is.EqualTo(1), "The session must create the initial runner.");
+
+            session.RebuildRuntime();
+            Assert.That(createCount, Is.EqualTo(2), "RebuildRuntime must recreate the runner so newly saved settings take effect.");
+        }
+
+        private sealed class CountingRuntimeProvider : IAgentRuntimeProvider
+        {
+            private readonly Func<AgentRunner> _factory;
+
+            public CountingRuntimeProvider(Func<AgentRunner> factory) => _factory = factory;
+
+            public AgentRunner CreateRunner() => _factory();
+
+            public ContextBudget Budget { get; } = new ContextBudget();
+
+            public string CompactSystemPrompt { get; } = "Summarize the conversation.";
+        }
+
+        private sealed class ManualDispatcherSynchronizationContext : SynchronizationContext
+        {
+            private readonly System.Collections.Concurrent.ConcurrentQueue<(SendOrPostCallback Callback, object State)> _queue =
+                new System.Collections.Concurrent.ConcurrentQueue<(SendOrPostCallback Callback, object State)>();
+
+            public override void Post(SendOrPostCallback d, object state) => _queue.Enqueue((d, state));
+
+            public override void Send(SendOrPostCallback d, object state) => d(state);
+
+            public void ProcessOne()
+            {
+                if (_queue.TryDequeue(out var item))
+                    item.Callback(item.State);
+            }
+
+            public void Drain()
+            {
+                while (_queue.TryDequeue(out var item))
+                    item.Callback(item.State);
+            }
+        }
+
+        private sealed class ReorderingSynchronizationContext : SynchronizationContext
+        {
+            private readonly Stack<(SendOrPostCallback Callback, object State)> _stack =
+                new Stack<(SendOrPostCallback Callback, object State)>();
+
+            public override void Post(SendOrPostCallback d, object state) => _stack.Push((d, state));
+
+            public override void Send(SendOrPostCallback d, object state) => d(state);
+
+            public void Drain()
+            {
+                while (_stack.Count > 0)
+                {
+                    var item = _stack.Pop();
+                    item.Callback(item.State);
+                }
+            }
+        }
+
+
     }
 }

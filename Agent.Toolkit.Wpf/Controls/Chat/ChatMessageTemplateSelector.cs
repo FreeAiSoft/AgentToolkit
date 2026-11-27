@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Agent.Core.Models;
+using Agent.Toolkit.Wpf.Diagnostics;
 
 namespace Agent.Toolkit.Wpf.Controls.Chat
 {
@@ -37,7 +38,14 @@ namespace Agent.Toolkit.Wpf.Controls.Chat
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            var kind = (item as ChatMessage)?.Kind ?? ChatMessageKind.SystemNotice;
+            var message = item as ChatMessage;
+            var kind = message?.Kind ?? ChatMessageKind.SystemNotice;
+            WpfLog.ChatDebug(
+                "[tpl] kind=" + kind +
+                " textLen=" + (message?.Text?.Length ?? -1) +
+                " reasonLen=" + (message?.Reasoning?.Length ?? -1) +
+                " thinking=" + (message?.IsThinking ?? false) +
+                " partial=" + (message?.IsPartial ?? false));
             var controlType = ControlByKind.TryGetValue(kind, out var type)
                 ? type
                 : typeof(SystemNoticeMessageControl);

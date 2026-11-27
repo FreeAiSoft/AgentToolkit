@@ -21,9 +21,6 @@
     <!-- Installs the WPF geometry parser that MaterialIconDataProvider.Get<Geometry> needs;
          without it every toolkit icon resolves to Geometry.Empty and renders invisible. -->
     <PackageReference Include="Material.Icons.WPF" Version="3.0.2" />
-    <!-- Host-side logging implementation for the toolkit's IAgentLogger seam. -->
-    <PackageReference Include="NLog" Version="5.3.4" />
-    <None Update="NLog.config" CopyToOutputDirectory="PreserveNewest" />
 
   </ItemGroup>
 

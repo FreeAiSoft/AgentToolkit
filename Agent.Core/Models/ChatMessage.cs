@@ -95,7 +95,7 @@ namespace Agent.Core.Models
         public string Reasoning
         {
             get => _reasoning;
-            set { if (_reasoning != value) { _reasoning = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasReasoning)); OnPropertyChanged(nameof(ShowReasoning)); OnPropertyChanged(nameof(ReasoningDisplayText)); } }
+            set { if (_reasoning != value) { _reasoning = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasReasoning)); OnPropertyChanged(nameof(ShowReasoning)); OnPropertyChanged(nameof(ReasoningDisplayText)); OnPropertyChanged(nameof(MessageTitle)); } }
         }
 
         /// <summary>Agent mode ("Plan"/"Act") this message was produced in; used for the UI label.</summary>
@@ -118,6 +118,7 @@ namespace Agent.Core.Models
                     OnPropertyChanged(nameof(ReasoningHeader));
                     OnPropertyChanged(nameof(ShowReasoning));
                     OnPropertyChanged(nameof(ReasoningDisplayText));
+                    OnPropertyChanged(nameof(MessageTitle));
                 }
             }
         }
@@ -196,8 +197,8 @@ namespace Agent.Core.Models
         /// <summary>
         /// Text shown in the message header ("top" line): tool name for tool calls, the mode
         /// text for mode switches, the first message line for user/system notices and errors,
-        /// the tool name for sub-agent cards, and a fixed "Reasoning" label for agent text;
-        /// empty otherwise.
+        /// the tool name for sub-agent cards; empty otherwise. Agent-text reasoning is labelled
+        /// by the reasoning expander header instead of the card title.
         /// </summary>
         public string MessageTitle
         {
@@ -213,7 +214,7 @@ namespace Agent.Core.Models
                     case ChatMessageKind.User:
                         return FirstLine(Text);
                     case ChatMessageKind.AgentText:
-                        return "Reasoning";
+                        return "";
                     case ChatMessageKind.Error:
                         return FirstLine(Text);
                     case ChatMessageKind.Subagent:
@@ -290,7 +291,7 @@ namespace Agent.Core.Models
                 }
 
                 var t = Text ?? "";
-                return string.IsNullOrEmpty(Label) ? t : Label + t;
+                return string.IsNullOrEmpty(Label) || string.IsNullOrEmpty(t) ? t : Label + t;
             }
         }
 

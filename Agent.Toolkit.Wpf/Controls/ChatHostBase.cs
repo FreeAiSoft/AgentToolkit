@@ -78,6 +78,12 @@ namespace Agent.Toolkit.Wpf.Controls
         /// <inheritdoc />
         public void RebuildAgentTools() => HostActions.RebuildAgentTools();
 
+        /// <summary>
+        /// Rebuilds the agent runner from the runtime provider. Called after the settings are
+        /// persisted so a changed provider/protocol/permission set takes effect on the next turn.
+        /// </summary>
+        public void RebuildRuntime() => Session.RebuildRuntime();
+
         /// <inheritdoc />
         public void StartNewChat() => Session.StartNewChat();
 

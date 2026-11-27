@@ -41,9 +41,11 @@ namespace Agent.Core.Stores
         /// <inheritdoc />
         public void Initialize()
         {
+            _logger.Info("[history-store] Initialize: databasePath=" + DatabasePath);
             try
             {
                 EnsureDatabase(out _);
+                _logger.Info("[history-store] Initialize: ok");
             }
             catch (Exception ex)
             {
@@ -57,6 +59,7 @@ namespace Agent.Core.Stores
             try
             {
                 EnsureDatabase(out var databasePath);
+                _logger.Info("[history-store] ListConversations: databasePath=" + databasePath + " limit=" + limit);
 
                 using (var connection = OpenConnection(databasePath))
                 {
@@ -78,6 +81,7 @@ LIMIT $limit;";
                         }
                     }
 
+                    _logger.Info("[history-store] ListConversations: count=" + result.Count);
                     return result;
                 }
             }
@@ -94,6 +98,7 @@ LIMIT $limit;";
             if (string.IsNullOrWhiteSpace(id))
                 return null;
 
+            _logger.Info("[history-store] LoadConversation: id=" + id);
             try
             {
                 EnsureDatabase(out var databasePath);
@@ -106,6 +111,7 @@ LIMIT $limit;";
 
                     ApplyConversationExtras(connection, conversation, id);
                     conversation.Messages = ReadMessages(connection, id);
+                    _logger.Info("[history-store] LoadConversation: loaded id=" + id + " messages=" + conversation.Messages.Count);
                     return conversation;
                 }
             }
@@ -122,6 +128,7 @@ LIMIT $limit;";
             if (conversation == null || string.IsNullOrWhiteSpace(conversation.Id))
                 return;
 
+            _logger.Info("[history-store] SaveConversation: id=" + conversation.Id + " title='" + (conversation.Title ?? "") + "' messages=" + (conversation.Messages?.Count ?? 0));
             try
             {
                 EnsureDatabase(out var databasePath);
@@ -149,6 +156,7 @@ LIMIT $limit;";
                         InsertMessage(connection, transaction, conversation.Id, seq, messages[seq]);
                     }
 
+                    _logger.Info("[history-store] SaveConversation: committed id=" + conversation.Id + " messages=" + messages.Count);
                     transaction.Commit();
                 }
             }
@@ -164,6 +172,7 @@ LIMIT $limit;";
             if (string.IsNullOrWhiteSpace(id))
                 return;
 
+            _logger.Info("[history-store] SetConversationImportant: id=" + id + " isImportant=" + isImportant);
             try
             {
                 EnsureDatabase(out var databasePath);
@@ -189,6 +198,7 @@ LIMIT $limit;";
             if (string.IsNullOrWhiteSpace(id))
                 return;
 
+            _logger.Info("[history-store] DeleteConversation: id=" + id);
             try
             {
                 EnsureDatabase(out var databasePath);
@@ -216,6 +226,7 @@ LIMIT $limit;";
         /// <inheritdoc />
         public void DeleteAllConversations()
         {
+            _logger.Info("[history-store] DeleteAllConversations");
             try
             {
                 EnsureDatabase(out var databasePath);

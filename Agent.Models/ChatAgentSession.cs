@@ -231,19 +231,26 @@ namespace Agent.Models
 
             var assembler = new ChatStreamAssembler();
             var segments = new Dictionary<string, ChatMessage>();
-            assembler.SegmentChanged += (s, e) => ApplySegment(e, segments, version);
+            assembler.SegmentChanged += (s, e) => ApplySegment(e, segments, version, mode);
 
             var progress = new ContextProgress<ChatStreamDelta>(delta =>
             {
                 if (version == _runVersion)
+                {
+                    _logger.Info("[delta] recv phase=" + delta.Phase +
+                        " seg=" + (delta.SegmentId ?? "") +
+                        " textLen=" + (delta.Text?.Length ?? 0) +
+                        " rDelta=" + (delta.ReasoningDelta?.Length ?? 0) +
+                        " cDelta=" + (delta.ContentDelta?.Length ?? 0));
                     assembler.OnDelta(delta);
-            });
+                }
+            }, _logger);
 
             var resumeProgress = new ContextProgress<AgentResumeSnapshot>(snapshot =>
             {
                 if (version == _runVersion)
                     _resumeSnapshot = snapshot;
-            });
+            }, _logger);
 
             try
             {
@@ -251,17 +258,19 @@ namespace Agent.Models
 
                 if (version == _runVersion)
                 {
-                    assembler.OnDelta(new ChatStreamDelta { Phase = ChatStreamPhase.TurnEnd });
+                    progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.TurnEnd });
                     _resumeSnapshot = null;
                     _model.HasResumableRun = false;
                     _model.StopStatus();
+                    _logger.Info("[stream] turnEnd messages=" + _model.Messages.Count + " kinds=" + string.Join(",", _model.Messages.Select(m => m.Kind)));
+
                 }
             }
             catch (OperationCanceledException)
             {
                 if (version == _runVersion)
                 {
-                    assembler.OnDelta(new ChatStreamDelta { Phase = ChatStreamPhase.TurnEnd });
+                    progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.TurnEnd });
                     _model.HasResumableRun = _resumeSnapshot != null;
                     _model.StopStatus();
                 }
@@ -271,7 +280,7 @@ namespace Agent.Models
                 _logger.Error(ex);
                 if (version == _runVersion)
                 {
-                    assembler.OnDelta(new ChatStreamDelta { Phase = ChatStreamPhase.TurnEnd });
+                    progress.Report(new ChatStreamDelta { Phase = ChatStreamPhase.TurnEnd });
                     _resumeSnapshot = null;
                     _model.ShowStatusError(ex.Message);
                     _model.HasResumableRun = false;
@@ -286,24 +295,34 @@ namespace Agent.Models
             }
         }
 
-        private void ApplySegment(ChatStreamSegmentEventArgs e, IDictionary<string, ChatMessage> segments, int version)
+        private void ApplySegment(ChatStreamSegmentEventArgs e, IDictionary<string, ChatMessage> segments, int version, AgentMode mode)
         {
             if (version != _runVersion)
                 return;
 
             var segmentId = e.SegmentId ?? "";
+            _logger.Info("[seg] " + e.Event + " " + e.Kind + " id=" + (e.SegmentId ?? "") + " textLen=" + (e.Text?.Length ?? 0));
+
             switch (e.Event)
             {
                 case ChatStreamSegmentEventKind.Opened:
                 {
+                    // Each streamed segment (reasoning or final content) is its own chat
+                    // message. Keeping them separate means the answer is never folded into
+                    // the reasoning block: reasoning renders as a collapsed "Reasoning"
+                    // expander, and the answer renders as its own mode-styled card
+                    // (ResultAnswerPlan / ResultAnswerAct, or plain AgentText for Help).
+                    var isReasoning = e.Kind == ChatStreamSegmentKind.Reasoning;
                     var message = new ChatMessage
                     {
-                        Kind = ChatMessageKind.AgentText,
-                        IsThinking = e.Kind == ChatStreamSegmentKind.Reasoning,
+                        Kind = isReasoning ? ChatMessageKind.AgentText : KindForMode(mode),
+                        Mode = isReasoning ? "" : AgentModeNames.ToValue(mode),
+                        IsThinking = isReasoning,
                         IsPartial = e.Kind == ChatStreamSegmentKind.Content
                     };
-                    segments[segmentId] = message;
+
                     _model.AppendMessage(message);
+                    segments[segmentId] = message;
                     break;
                 }
 
@@ -327,16 +346,40 @@ namespace Agent.Models
                         {
                             message.Reasoning = e.Text ?? "";
                             message.IsThinking = false;
+                            _logger.Info("[seg] closed reasoning text='" + Preview(e.Text) + "'");
                         }
                         else
                         {
                             message.Text = e.Text ?? "";
                             message.IsPartial = false;
+                            _logger.Info("[seg] closed content text='" + Preview(e.Text) + "'");
                         }
                     }
                     break;
                 }
             }
+        }
+
+        private static ChatMessageKind KindForMode(AgentMode mode)
+        {
+            switch (mode)
+            {
+                case AgentMode.Act:
+                    return ChatMessageKind.ResultAnswerAct;
+                case AgentMode.Help:
+                    return ChatMessageKind.AgentText;
+                default:
+                    return ChatMessageKind.ResultAnswerPlan;
+            }
+        }
+
+        private static string Preview(string text, int max = 200)
+        {
+            if (string.IsNullOrEmpty(text))
+                return "<empty>";
+
+            var single = text.Replace("\r", "\\r").Replace("\n", "\\n");
+            return single.Length <= max ? single : single.Substring(0, max) + "…";
         }
 
         private static List<ChatMessageData> BuildTranscript(IEnumerable<ChatMessage> messages)
@@ -459,22 +502,70 @@ namespace Agent.Models
         {
             private readonly SynchronizationContext _context;
             private readonly Action<T> _handler;
+            private readonly IAgentLogger _logger;
+            private readonly Queue<T> _pending = new Queue<T>();
+            private long _seq;
+            private bool _draining;
 
-            public ContextProgress(Action<T> handler)
+            public ContextProgress(Action<T> handler, IAgentLogger logger = null)
             {
                 _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+                _logger = logger ?? NoOpLogger.Instance;
                 _context = SynchronizationContext.Current;
             }
 
             public void Report(T value)
             {
                 if (_context == null)
+                {
+                    _logger.Info("[ctx] sync phase=" + Describe(value) + " thread=" + Environment.CurrentManagedThreadId);
                     _handler(value);
-                else
-                    _context.Post(_ => _handler(value), null);
+                    return;
+                }
+
+                lock (_pending)
+                {
+                    var seq = System.Threading.Interlocked.Increment(ref _seq);
+                    _logger.Info("[ctx] enqueue seq=" + seq + " phase=" + Describe(value) + " thread=" + Environment.CurrentManagedThreadId + " draining=" + _draining + " count=" + (_pending.Count + 1));
+                    _pending.Enqueue(value);
+                    if (_draining)
+                        return;
+
+                    _draining = true;
+                    _context.Post(_ => Drain(), null);
+                }
+            }
+
+            private void Drain()
+            {
+                while (true)
+                {
+                    T value;
+                    lock (_pending)
+                    {
+                        if (_pending.Count == 0)
+                        {
+                            _draining = false;
+                            return;
+                        }
+
+                        value = _pending.Dequeue();
+                        _logger.Info("[ctx] dequeue phase=" + Describe(value) + " thread=" + Environment.CurrentManagedThreadId + " count=" + _pending.Count);
+                    }
+
+                    _handler(value);
+                }
+            }
+
+            private static string Describe(T value)
+            {
+                if (value is ChatStreamDelta d)
+                    return d.Phase + " seg=" + (d.SegmentId ?? "") + " textLen=" + (d.Text?.Length ?? 0);
+                if (value is AgentResumeSnapshot)
+                    return "ResumeSnapshot";
+                return typeof(T).Name;
             }
         }
-
         private sealed class NoOpLogger : IAgentLogger
         {
             public static readonly NoOpLogger Instance = new NoOpLogger();

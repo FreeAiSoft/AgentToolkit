@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Extended WPF host used to exercise the shared chat UI with a real NLog logger.
+    Mirrors Agent.ChatHost (the thin host) but injects an IAgentLogger backed by NLog,
+    writing to a well-known logs/ folder under the repository root so the agent can read
+    it in Plan mode (via read_files / analyze_logs).
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Agent.ChatHost.Extended</RootNamespace>
+    <AssemblyName>Agent.ChatHost.Extended</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <!-- Installs the WPF geometry parser that MaterialIconDataProvider.Get<Geometry> needs;
+         without it every toolkit icon resolves to Geometry.Empty and renders invisible. -->
+    <PackageReference Include="Material.Icons.WPF" Version="3.0.2" />
+    <!-- Real logging seam injected as IAgentLogger. -->
+    <PackageReference Include="NLog" Version="5.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Agent.Core\Agent.Core.csproj" />
+    <ProjectReference Include="..\Agent.Models\Agent.Models.csproj" />
+    <ProjectReference Include="..\Agent.Mvvm\Agent.Mvvm.csproj" />
+    <ProjectReference Include="..\Agent.Toolkit.Wpf\Agent.Toolkit.Wpf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

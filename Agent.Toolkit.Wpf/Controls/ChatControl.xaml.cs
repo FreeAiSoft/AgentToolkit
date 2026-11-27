@@ -48,6 +48,7 @@ namespace Agent.Toolkit.Wpf.Controls
         private ISpeechToTextService _stt;
         private ToolCallProgressTracker _toolTracker;
         private ToolkitSettingsStore _defaultSettingsStore;
+        private IChatHost _host;
 
         public ChatControl()
         {
@@ -58,10 +59,25 @@ namespace Agent.Toolkit.Wpf.Controls
         }
 
         /// <summary>Host seam: agent loop, commit, build errors, robot creation, workspace scoping.</summary>
-        public IChatHost Host { get; set; }
+        public IChatHost Host
+        {
+            get => _host;
+            set
+            {
+                _host = value;
+                AttachPromptSink();
+            }
+        }
 
         /// <summary>Settings used by the permissions overlay and voice input.</summary>
         public SettingsData Settings { get; set; }
+
+        /// <summary>
+        /// Settings model shared with the settings tab. When set, the permissions overlay reads
+        /// and writes this model instead of the legacy <see cref="Settings"/> snapshot, so chat
+        /// permissions and the settings tab share a single source of truth.
+        /// </summary>
+        public SettingsModel SettingsModel { get; set; }
 
         /// <summary>
         /// Optional persistence seam for the settings the permissions overlay edits. When null, the
@@ -179,6 +195,16 @@ namespace Agent.Toolkit.Wpf.Controls
             HistoryList.ItemsSource = model.History;
 
             RefreshPinnedMessage();
+            AttachPromptSink();
+        }
+
+        private void AttachPromptSink()
+        {
+            var model = Model;
+            if (model == null)
+                return;
+
+            model.SetChatPromptSink(Host == null ? null : new HostPromptSink(Host));
         }
 
         private void OnModelPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -579,18 +605,19 @@ namespace Agent.Toolkit.Wpf.Controls
 
         private void OnPermissionsClick(object sender, RoutedEventArgs e)
         {
+            var settingsModel = SettingsModel;
             var settings = Settings;
-            if (settings != null)
+            if (settingsModel != null || settings != null)
             {
                 _suppressPermissionEvents = true;
                 try
                 {
-                    AllowReadFilesCheckBox.IsChecked = settings.AllowReadFiles;
-                    AllowEditFilesCheckBox.IsChecked = settings.AllowEditFiles;
-                    AllowExecuteCommandCheckBox.IsChecked = settings.AllowExecuteCommand;
-                    AllowWebFetchCheckBox.IsChecked = settings.AllowWebFetch;
-                    AllowMcpCheckBox.IsChecked = settings.AllowMcp;
-                    AskBeforeEachToolCheckBox.IsChecked = settings.AskBeforeEachTool;
+                    AllowReadFilesCheckBox.IsChecked = settingsModel != null ? settingsModel.AllowReadFiles : settings.AllowReadFiles;
+                    AllowEditFilesCheckBox.IsChecked = settingsModel != null ? settingsModel.AllowEditFiles : settings.AllowEditFiles;
+                    AllowExecuteCommandCheckBox.IsChecked = settingsModel != null ? settingsModel.AllowExecuteCommand : settings.AllowExecuteCommand;
+                    AllowWebFetchCheckBox.IsChecked = settingsModel != null ? settingsModel.AllowWebFetch : settings.AllowWebFetch;
+                    AllowMcpCheckBox.IsChecked = settingsModel != null ? settingsModel.AllowMcp : settings.AllowMcp;
+                    AskBeforeEachToolCheckBox.IsChecked = settingsModel != null ? settingsModel.AskBeforeEachTool : settings.AskBeforeEachTool;
                 }
                 finally
                 {
@@ -608,7 +635,23 @@ namespace Agent.Toolkit.Wpf.Controls
 
         private void OnPermissionChanged(object sender, RoutedEventArgs e)
         {
-            if (_suppressPermissionEvents || Settings == null)
+            if (_suppressPermissionEvents)
+                return;
+
+            if (SettingsModel != null)
+            {
+                SettingsModel.AllowReadFiles = AllowReadFilesCheckBox?.IsChecked ?? true;
+                SettingsModel.AllowEditFiles = AllowEditFilesCheckBox?.IsChecked ?? true;
+                SettingsModel.AllowExecuteCommand = AllowExecuteCommandCheckBox?.IsChecked ?? false;
+                SettingsModel.AllowWebFetch = AllowWebFetchCheckBox?.IsChecked ?? false;
+                SettingsModel.AllowMcp = AllowMcpCheckBox?.IsChecked ?? false;
+                SettingsModel.AskBeforeEachTool = AskBeforeEachToolCheckBox?.IsChecked ?? false;
+                SettingsModel.SaveSettingsCommand();
+                Host?.RebuildAgentTools();
+                return;
+            }
+
+            if (Settings == null)
                 return;
 
             Settings.AllowReadFiles = AllowReadFilesCheckBox?.IsChecked ?? true;
@@ -918,6 +961,16 @@ namespace Agent.Toolkit.Wpf.Controls
                 return;
             }
             VoiceError?.Invoke(this, text ?? "");
+        }
+
+        private sealed class HostPromptSink : IChatPromptSink
+        {
+            private readonly IChatHost _host;
+
+            public HostPromptSink(IChatHost host) => _host = host;
+
+            public Task SendPromptAsync(string prompt, CancellationToken cancellationToken = default)
+                => _host.SendChatAsync(prompt, null);
         }
     }
 }

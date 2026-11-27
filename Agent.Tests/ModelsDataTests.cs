@@ -28,6 +28,16 @@ namespace Agent.Tests
         }
 
         [Test]
+        public void DisplayText_EmptyAgentText_ReturnsEmpty()
+        {
+            var message = new ChatMessage { Kind = ChatMessageKind.AgentText, Text = "" };
+
+            Assert.That(message.DisplayText, Is.EqualTo(""));
+            Assert.That(message.Blocks, Is.Empty);
+        }
+
+
+        [Test]
         public void DisplayText_ForToolCallAndBlocked()
         {
             var call = new ChatMessage
@@ -88,6 +98,71 @@ namespace Agent.Tests
 
             Assert.That(message.MessageTitle, Is.EqualTo("build"));
         }
+
+        [Test]
+        public void MessageTitle_AgentText_WithReasoning_ReturnsEmpty()
+        {
+            // Agent-text cards have no card-level title; reasoning is labelled by the
+            // reasoning expander header (ReasoningHeader) instead.
+            var message = new ChatMessage
+            {
+                Kind = ChatMessageKind.AgentText,
+                Reasoning = "thinking..."
+            };
+
+            Assert.That(message.MessageTitle, Is.EqualTo(""));
+        }
+
+        [Test]
+        public void MessageTitle_AgentText_WhileThinking_ReturnsEmpty()
+        {
+            var message = new ChatMessage
+            {
+                Kind = ChatMessageKind.AgentText,
+                IsThinking = true
+            };
+
+            Assert.That(message.MessageTitle, Is.EqualTo(""));
+        }
+
+        [Test]
+        public void MessageTitle_AgentText_WithoutReasoning_ReturnsEmpty()
+        {
+            // Regression: a plain answer/content segment is also an AgentText message and must not
+            // be labelled "Reasoning" (the bug labelled every agent block "Reasoning").
+            var message = new ChatMessage
+            {
+                Kind = ChatMessageKind.AgentText,
+                Text = "final answer"
+            };
+
+            Assert.That(message.MessageTitle, Is.EqualTo(""));
+        }
+
+        [Test]
+        public void ReasoningHeader_StreamingThenDone()
+        {
+            var message = new ChatMessage { Kind = ChatMessageKind.AgentText, IsThinking = true };
+
+            Assert.That(message.ReasoningHeader, Is.EqualTo("Thinking…"));
+
+            message.IsThinking = false;
+
+            Assert.That(message.ReasoningHeader, Is.EqualTo("Reasoning"));
+        }
+
+        [Test]
+        public void ReasoningHeader_RaisesPropertyChangedWhenThinkingEnds()
+        {
+            var message = new ChatMessage { Kind = ChatMessageKind.AgentText, IsThinking = true };
+            var raised = new List<string>();
+            message.PropertyChanged += (s, e) => raised.Add(e.PropertyName);
+
+            message.IsThinking = false;
+
+            Assert.That(raised, Does.Contain(nameof(ChatMessage.ReasoningHeader)));
+        }
+
 
         [Test]
         public void ReasoningDisplayText_StreamingShowsTail()

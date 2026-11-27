@@ -34,7 +34,7 @@ namespace Agent.Models
     {
         private readonly IChatHistoryStore _historyStore;
         private readonly IUiStateStore _uiStateStore;
-        private readonly IChatPromptSink _chatSink;
+        private IChatPromptSink _chatSink;
         private readonly IWorkspaceProvider _workspaceProvider;
         private readonly IAgentLogger _logger;
 
@@ -114,6 +114,17 @@ namespace Agent.Models
             // has to be displayed or sent (EnsureActiveConversation, StartNewChat, OpenConversation).
             _activeChatConversation = null;
             Messages.CollectionChanged += OnMessagesChanged;
+        }
+
+        /// <summary>
+        /// Replaces the prompt sink used by <see cref="DoItCommand"/>. The view wires this to the
+        /// host when the chat is attached, so the "Do it!!!" footer button can send the prompt
+        /// through the real agent loop; a <c>null</c> sink keeps the command a pure mode switch
+        /// (headless runs, tests).
+        /// </summary>
+        public void SetChatPromptSink(IChatPromptSink chatSink)
+        {
+            _chatSink = chatSink;
         }
 
         #region State
@@ -537,13 +548,16 @@ namespace Agent.Models
             ChildModel?.Run();
 
             _historyStore.WorkspaceId = _workspaceProvider?.GetCurrentWorkspace()?.Id ?? "";
+            _logger.Info("[history-init] store=" + _historyStore.GetType().Name + " workspaceId='" + (_historyStore.WorkspaceId ?? "") + "'");
 
             try
             {
                 _historyStore.Initialize();
+                _logger.Info("[history-init] initialized store=" + _historyStore.GetType().Name);
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "[history-init] initialize failed");
                 LastError = "Chat history unavailable: " + ex.Message;
                 return;
             }
@@ -576,6 +590,8 @@ namespace Agent.Models
                 return null;
 
             Messages.Add(message);
+            _logger.Info("[append] kind=" + message.Kind + " textLen=" + (message.Text?.Length ?? 0) + " reasonLen=" + (message.Reasoning?.Length ?? 0) + " thinking=" + message.IsThinking + " partial=" + message.IsPartial);
+
             return message;
         }
 
@@ -698,13 +714,15 @@ namespace Agent.Models
             try
             {
                 var conversations = _historyStore.ListConversations() ?? new List<ChatConversation>();
+                _logger.Info("[history-list] store=" + _historyStore.GetType().Name + " count=" + conversations.Count);
                 History.Clear();
                 foreach (var conversation in conversations)
                     History.Add(conversation);
             }
-            catch
+            catch (Exception ex)
             {
                 // Listing history is best effort: never break the chat because of the store.
+                _logger.Error(ex, "[history-list] failed");
             }
 
             UpdateActiveFlags();
@@ -718,6 +736,7 @@ namespace Agent.Models
         public void SetWorkspaceScope(string workspaceId)
         {
             var normalized = workspaceId ?? "";
+            _logger.Info("[history-scope] requested='" + normalized + "' current='" + (_historyStore.WorkspaceId ?? "") + "'");
 
             // A solution event that reports the same scope (e.g. a spurious Opened/AfterClosing)
             // must not flush, close the active chat or reload history: doing so on every solution
@@ -732,6 +751,7 @@ namespace Agent.Models
             ActiveChatConversation = null;
             ViewMode = ChatViewMode.History;
             LastError = "";
+            _logger.Info("[history-scope] switched to workspaceId='" + normalized + "'");
             RefreshHistory();
         }
 
@@ -741,9 +761,11 @@ namespace Agent.Models
         /// </summary>
         public void StartNewChat(bool markDirty = true)
         {
+            _logger.Info("[history-new] start, activeId='" + ActiveConversationId + "'");
             SaveHistoryNow();
             ClearConversationState(markDirty);
             ActiveChatConversation = CreateConversation();
+            _logger.Info("[history-new] new conversation id='" + ActiveConversationId + "'");
             ViewMode = ChatViewMode.Conversation;
         }
 
@@ -777,6 +799,7 @@ namespace Agent.Models
             // does not leak into the conversation created here.
             ClearConversationState(markDirty: false);
             ActiveChatConversation = CreateConversation();
+            _logger.Info("[history-ensure] created conversation id='" + ActiveConversationId + "'");
             return _activeChatConversation;
         }
 
@@ -794,6 +817,7 @@ namespace Agent.Models
         /// </summary>
         public void CloseActiveChat()
         {
+            _logger.Info("[history-close] close active id='" + ActiveConversationId + "'");
             SaveHistoryNow();
             ClearConversationState(markDirty: false);
             ActiveChatConversation = null;
@@ -835,9 +859,13 @@ namespace Agent.Models
             if (string.IsNullOrWhiteSpace(id))
                 return false;
             if (string.Equals(id, ActiveConversationId, StringComparison.Ordinal))
+            {
+                _logger.Info("[history-open] already active id='" + id + "'");
                 return false;
+            }
 
             LastError = "";
+            _logger.Info("[history-open] loading id='" + id + "'");
 
             // Load the target first: a missing conversation fails fast without flushing the active
             // one, and the active chat is only saved once the open is known to succeed.
@@ -848,12 +876,18 @@ namespace Agent.Models
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "[history-open] load failed id='" + id + "'");
                 LastError = "Failed to open chat: " + ex.Message;
                 return false;
             }
 
             if (stored == null)
+            {
+                _logger.Warn("[history-open] not found id='" + id + "'");
                 return false;
+            }
+
+            _logger.Info("[history-open] loaded id='" + id + "' messages=" + (stored.Messages?.Count ?? 0));
 
             SaveHistoryNow();
             Pending.Clear();
@@ -875,6 +909,7 @@ namespace Agent.Models
 
             RefreshPinnedMessage();
             IsDirty = markDirty;
+            _logger.Info("[history-open] opened id='" + id + "'");
             return true;
         }
 
@@ -888,12 +923,14 @@ namespace Agent.Models
                 return false;
 
             LastError = "";
+            _logger.Info("[history-delete] id='" + id + "' activeId='" + ActiveConversationId + "'");
             try
             {
                 _historyStore.DeleteConversation(id);
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "[history-delete] failed id='" + id + "'");
                 LastError = "Failed to delete chat: " + ex.Message;
                 return false;
             }
@@ -902,6 +939,7 @@ namespace Agent.Models
                 ResetConversation();
 
             RefreshHistory();
+            _logger.Info("[history-delete] deleted id='" + id + "'");
             return true;
         }
 
@@ -923,12 +961,14 @@ namespace Agent.Models
 
             var target = !conversation.IsImportant;
             LastError = "";
+            _logger.Info("[history-important] id='" + id + "' target=" + target);
             try
             {
                 _historyStore.SetConversationImportant(id, target);
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "[history-important] failed id='" + id + "'");
                 LastError = "Failed to update chat: " + ex.Message;
                 return false;
             }
@@ -941,12 +981,14 @@ namespace Agent.Models
         public bool ClearHistory()
         {
             LastError = "";
+            _logger.Info("[history-clear] clearing all conversations");
             try
             {
                 _historyStore.DeleteAllConversations();
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "[history-clear] failed");
                 LastError = "Failed to clear chat history: " + ex.Message;
                 return false;
             }
@@ -967,17 +1009,41 @@ namespace Agent.Models
         {
             var conversation = ActiveChatConversation;
             if (conversation == null || string.IsNullOrWhiteSpace(conversation.Id))
+            {
+                _logger.Info("[history-save] skip: no active conversation");
                 return;
+            }
+
+            _logger.Info(
+                "[history-save] begin id='" + conversation.Id + "'" +
+                " title='" + (conversation.Title ?? "") + "'" +
+                " fullHistoryCount=" + _fullHistory.Count +
+                " visibleCount=" + Messages.Count +
+                " store=" + _historyStore.GetType().Name +
+                " workspaceId='" + (_historyStore.WorkspaceId ?? "") + "'");
 
             // Persist from the append-only full history, not from the visible transcript: compaction
             // and scope switches may shrink Messages without the stored conversation losing its tail.
             conversation.Messages = ChatMessageMapper.ToHistoryMessages(_fullHistory);
 
+            // A fresh conversation (created by EnsureActiveConversation before the user typed
+            // anything) has no messages and no title; persisting it would put an empty "(empty)"
+            // card into history. Skip it and leave IsDirty untouched.
+            if (conversation.Messages.Count == 0 && string.IsNullOrEmpty(conversation.Title))
+            {
+                _logger.Info("[history-save] skip: empty conversation id='" + conversation.Id + "'");
+                return;
+            }
+
             if (string.IsNullOrEmpty(conversation.Title))
             {
                 var firstUser = conversation.Messages.FirstOrDefault(m => m.Kind == ChatMessageKind.User);
-                if (firstUser != null)
-                    conversation.Title = ChatMessageMapper.BuildTitle(firstUser.Text);
+                var first = firstUser ?? conversation.Messages.FirstOrDefault();
+                if (first != null)
+                {
+                    conversation.Title = ChatMessageMapper.BuildTitle(first.Text);
+                    _logger.Info("[history-save] derived title='" + conversation.Title + "' from kind=" + first.Kind);
+                }
             }
 
             conversation.UpdatedAtUtc = DateTime.UtcNow;
@@ -985,9 +1051,14 @@ namespace Agent.Models
             try
             {
                 _historyStore.SaveConversation(conversation);
+                _logger.Info(
+                    "[history-save] saved id='" + conversation.Id + "'" +
+                    " title='" + (conversation.Title ?? "") + "'" +
+                    " messages=" + conversation.Messages.Count);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.Error(ex, "[history-save] failed id='" + conversation.Id + "'");
                 return; // keep IsDirty so the next tick retries
             }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Agent.Core.Models;
+using Agent.Toolkit.Wpf.Diagnostics;
 
 namespace Agent.Toolkit.Wpf.Controls.Chat
 {
@@ -33,7 +34,7 @@ namespace Agent.Toolkit.Wpf.Controls.Chat
                 nameof(IsExpanded),
                 typeof(bool),
                 typeof(ChatMessageCard),
-                new PropertyMetadata(false));
+                new PropertyMetadata(true));
 
         public static readonly RoutedEvent CopyRequestedEvent =
             EventManager.RegisterRoutedEvent("CopyRequested", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ChatMessageCard));
@@ -101,13 +102,71 @@ namespace Agent.Toolkit.Wpf.Controls.Chat
             if (_message != null)
                 _message.PropertyChanged += OnMessagePropertyChanged;
 
+            if (_message != null)
+            {
+                WpfLog.ChatDebug(
+                    "[card] bind kind=" + _message.Kind +
+                    " textLen=" + (_message.Text?.Length ?? -1) +
+                    " reasonLen=" + (_message.Reasoning?.Length ?? -1) +
+                    " thinking=" + _message.IsThinking +
+                    " partial=" + _message.IsPartial +
+                    " showReasoning=" + _message.ShowReasoning +
+                    " blocks=" + (_message.Blocks?.Count ?? -1) +
+                    " text='" + Preview(_message.Text) + "'" +
+                    " reasoning='" + Preview(_message.Reasoning) + "'");
+            }
+
             UpdateExecutingDot(_message?.IsExecuting == true);
         }
 
         private void OnMessagePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            var m = (ChatMessage)sender;
+
             if (e.PropertyName == nameof(ChatMessage.IsExecuting))
-                UpdateExecutingDot(((ChatMessage)sender).IsExecuting);
+            {
+                UpdateExecutingDot(m.IsExecuting);
+                return;
+            }
+
+            // State transitions are logged so the UI-side reasoning/answer split is traceable.
+            if (e.PropertyName == nameof(ChatMessage.IsThinking))
+            {
+                WpfLog.ChatDebug(
+                    "[card] thinking=" + m.IsThinking +
+                    " header='" + m.ReasoningHeader + "'" +
+                    " textLen=" + (m.Text?.Length ?? -1) +
+                    " reasonLen=" + (m.Reasoning?.Length ?? -1));
+            }
+
+            if (e.PropertyName == nameof(ChatMessage.IsPartial))
+            {
+                WpfLog.ChatDebug(
+                    "[card] partial=" + m.IsPartial +
+                    " kind=" + m.Kind +
+                    " textLen=" + (m.Text?.Length ?? -1) +
+                    " reasonLen=" + (m.Reasoning?.Length ?? -1) +
+                    " blocks=" + (m.Blocks?.Count ?? -1));
+            }
+
+            if (e.PropertyName == nameof(ChatMessage.IsPartial) && !m.IsPartial)
+            {
+                WpfLog.ChatDebug(
+                    "[AgentText] final kind=" + m.Kind +
+                    " textLen=" + (m.Text?.Length ?? -1) +
+                    " reasonLen=" + (m.Reasoning?.Length ?? -1) +
+                    " blocks=" + (m.Blocks?.Count ?? -1) +
+                    " text='" + Preview(m.Text) + "'" +
+                    " reasoning='" + Preview(m.Reasoning) + "'" +
+                    " display='" + Preview(m.DisplayText) + "'");
+            }
+        }
+
+        private static string Preview(string text, int max = 120)
+        {
+            if (string.IsNullOrEmpty(text)) return "<empty>";
+            var single = text.Replace("\r", "\\r").Replace("\n", "\\n");
+            return single.Length <= max ? single : single.Substring(0, max) + "…";
         }
 
         private void UpdateExecutingDot(bool executing)

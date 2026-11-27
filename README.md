@@ -47,6 +47,21 @@ and are not shared with VibeCoder / AI-RPA.
 - `SettingsControl` owns the generic settings view and exposes `InsertHostSection(int, SettingsSection)`
   plus `HostBannerSlot` / `HostToolbarSlot` for host-specific settings sections.
 
+## Drop-in host (`AgentChatControl`)
+
+For hosts that only need the whole chat (Chat + Settings tabs) without wiring models,
+stores and the agent host by hand, `Agent.Toolkit.Wpf` ships a self-contained facade:
+
+```xml
+<controls:AgentChatControl x:Name="Chat"/>
+```
+
+It builds the `AgentTabControl` with the `Chat`/`Settings` tabs, an in-memory history store,
+a SQLite settings store under `%AppData%\AgentToolkit\toolkit.db` and a standalone stub agent
+host. Every seam is overridable (`AppDataDirectory`, `SettingsStore`, `HistoryStore`,
+`WorkspaceProvider`, `RuntimeProvider`, `HostActions`, `Host`, `Logger`), and host content is
+added through `AddHostTab(...)` and `InsertSettingsSection(...)`.
+
 ## Publishing
 
 ```

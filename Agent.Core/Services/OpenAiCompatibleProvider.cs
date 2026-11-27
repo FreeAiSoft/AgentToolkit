@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -349,6 +350,15 @@ namespace Agent.Core.Services
 
                         AccumulateToolCalls(delta["tool_calls"], toolAcc);
 
+                        if (reasoningDelta != null || contentDelta != null)
+                        {
+                            Trace.TraceInformation(
+                                "[OpenAiCompat] delta rLen=" + (reasoningDelta?.Length ?? 0) +
+                                " cLen=" + (contentDelta?.Length ?? 0) +
+                                " toolCalls=" + (delta["tool_calls"] != null) +
+                                " finish=" + (fr ?? ""));
+                        }
+
                         if (!string.IsNullOrEmpty(reasoningDelta))
                         {
                             reasoning.Append(reasoningDelta);
@@ -417,11 +427,25 @@ namespace Agent.Core.Services
                             finishReason.Clear();
                             finishReason.Append(fr);
                         }
+
+                        Trace.TraceInformation(
+                            "[OpenAiCompat] nonSse reasoning=" + reasoning.Length +
+                            " content=" + content.Length +
+                            " finish=" + finishReason);
+
                         toolCalls.AddRange(ParseToolCalls(messageObj));
                         return;
                     }
                     // otherwise: ignore (e.g. an SSE "event:" line)
                 }
+
+            Trace.TraceInformation(
+                "[OpenAiCompat] streamEnd reasoning=" + reasoning.Length +
+                " reasoningText='" + Preview(reasoning.ToString()) + "'" +
+                " content=" + content.Length +
+                " contentText='" + Preview(content.ToString()) + "'" +
+                " finish=" + finishReason +
+                " toolCalls=" + toolCalls.Count);
             }
 
             if (reasoningOpen)
@@ -777,6 +801,15 @@ namespace Agent.Core.Services
             return obj["content"]?.Value<string>()
                 ?? obj["summary"]?.Value<string>()
                 ?? obj.ToString();
+        }
+
+        private static string Preview(string text, int max = 200)
+        {
+            if (string.IsNullOrEmpty(text))
+                return "<empty>";
+
+            var single = text.Replace("\r", "\\r").Replace("\n", "\\n");
+            return single.Length <= max ? single : single.Substring(0, max) + "…";
         }
 
         internal HttpRequestMessage BuildRequest(string userMessage)
